@@ -1,0 +1,55 @@
+# Archivos y carpetas generados por Visual Studio
+.vs/
+*.user
+*.suo
+*.db
+*.log
+*.pdb
+
+# Carpetas de compilación
+bin/
+obj/
+
+# Paquetes NuGet
+*.nupkg
+packages/
+# Si usas paquetes.config, puedes ignorar la carpeta packages, pero si usas PackageReference, puedes quitarlo
+
+# Archivos de configuración locales
+*.local.json
+appsettings.*.local.json
+
+# Archivos de publicación
+*.Publish.xml
+*.pubxml
+*.publishsettings
+
+# Archivos de backup y temporales
+*.tmp
+*.bak
+*.swp
+*.sln.docstates
+
+# Otros archivos generados
+*.cache
+*.ide
+*.orig
+*.rej
+*.vspscc
+*.vssscc
+
+# SQLite y otros DB
+*.sqlite
+
+# Archivos de entorno
+.env
+
+# Ignorar logs de la carpeta Logs
+Logs/
+
+# Ignorar archivos de configuración de usuario
+SincronizadorConfigUI/*.csproj.user
+SincronizadorConfigUIv8/*.csproj.user
+
+# Ignorar archivos de VS Code
+.vscode/
