@@ -28,167 +28,181 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.btnCargar = new System.Windows.Forms.Button();
-			this.label1 = new System.Windows.Forms.Label();
-			this.txtApiUrl = new System.Windows.Forms.TextBox();
-			this.txtApiUser = new System.Windows.Forms.TextBox();
-			this.txtApiPassword = new System.Windows.Forms.TextBox();
-			this.txtLogDirectory = new System.Windows.Forms.TextBox();
-			this.txtConnectionString = new System.Windows.Forms.TextBox();
-			this.btnGuardar = new System.Windows.Forms.Button();
-			this.nudIntervalo = new System.Windows.Forms.NumericUpDown();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label3 = new System.Windows.Forms.Label();
-			this.label4 = new System.Windows.Forms.Label();
-			this.label5 = new System.Windows.Forms.Label();
-			this.label6 = new System.Windows.Forms.Label();
-			((System.ComponentModel.ISupportInitialize)(this.nudIntervalo)).BeginInit();
-			this.SuspendLayout();
+			btnCargar = new Button();
+			label1 = new Label();
+			txtApiUrl = new TextBox();
+			txtApiUser = new TextBox();
+			txtApiPassword = new TextBox();
+			txtLogDirectory = new TextBox();
+			txtConnectionString = new TextBox();
+			btnGuardar = new Button();
+			nudIntervalo = new NumericUpDown();
+			label2 = new Label();
+			label3 = new Label();
+			label4 = new Label();
+			label5 = new Label();
+			label6 = new Label();
+			((System.ComponentModel.ISupportInitialize)nudIntervalo).BeginInit();
+			SuspendLayout();
 			// 
 			// btnCargar
 			// 
-			this.btnCargar.Location = new System.Drawing.Point(106, 338);
-			this.btnCargar.Name = "btnCargar";
-			this.btnCargar.Size = new System.Drawing.Size(75, 23);
-			this.btnCargar.TabIndex = 0;
-			this.btnCargar.Text = "Cargar";
-			this.btnCargar.UseVisualStyleBackColor = true;
-			this.btnCargar.Click += new System.EventHandler(this.btnCargar_Click);
+			btnCargar.Location = new Point(141, 520);
+			btnCargar.Margin = new Padding(4, 5, 4, 5);
+			btnCargar.Name = "btnCargar";
+			btnCargar.Size = new Size(100, 35);
+			btnCargar.TabIndex = 0;
+			btnCargar.Text = "Cargar";
+			btnCargar.UseVisualStyleBackColor = true;
+			btnCargar.Click += btnCargar_Click;
 			// 
 			// label1
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(35, 36);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(49, 13);
-			this.label1.TabIndex = 1;
-			this.label1.Text = "URL API";
+			label1.AutoSize = true;
+			label1.Location = new Point(47, 55);
+			label1.Margin = new Padding(4, 0, 4, 0);
+			label1.Name = "label1";
+			label1.Size = new Size(61, 20);
+			label1.TabIndex = 1;
+			label1.Text = "URL API";
 			// 
 			// txtApiUrl
 			// 
-			this.txtApiUrl.Location = new System.Drawing.Point(106, 36);
-			this.txtApiUrl.Name = "txtApiUrl";
-			this.txtApiUrl.Size = new System.Drawing.Size(354, 20);
-			this.txtApiUrl.TabIndex = 2;
+			txtApiUrl.Location = new Point(141, 55);
+			txtApiUrl.Margin = new Padding(4, 5, 4, 5);
+			txtApiUrl.Name = "txtApiUrl";
+			txtApiUrl.Size = new Size(471, 27);
+			txtApiUrl.TabIndex = 2;
 			// 
 			// txtApiUser
 			// 
-			this.txtApiUser.Location = new System.Drawing.Point(106, 72);
-			this.txtApiUser.Name = "txtApiUser";
-			this.txtApiUser.Size = new System.Drawing.Size(354, 20);
-			this.txtApiUser.TabIndex = 3;
+			txtApiUser.Location = new Point(141, 111);
+			txtApiUser.Margin = new Padding(4, 5, 4, 5);
+			txtApiUser.Name = "txtApiUser";
+			txtApiUser.Size = new Size(471, 27);
+			txtApiUser.TabIndex = 3;
 			// 
 			// txtApiPassword
 			// 
-			this.txtApiPassword.Location = new System.Drawing.Point(106, 116);
-			this.txtApiPassword.MaxLength = 16;
-			this.txtApiPassword.Name = "txtApiPassword";
-			this.txtApiPassword.Size = new System.Drawing.Size(354, 20);
-			this.txtApiPassword.TabIndex = 4;
+			txtApiPassword.Location = new Point(141, 178);
+			txtApiPassword.Margin = new Padding(4, 5, 4, 5);
+			txtApiPassword.MaxLength = 255;
+			txtApiPassword.Name = "txtApiPassword";
+			txtApiPassword.Size = new Size(471, 27);
+			txtApiPassword.TabIndex = 4;
 			// 
 			// txtLogDirectory
 			// 
-			this.txtLogDirectory.Location = new System.Drawing.Point(106, 152);
-			this.txtLogDirectory.Name = "txtLogDirectory";
-			this.txtLogDirectory.Size = new System.Drawing.Size(354, 20);
-			this.txtLogDirectory.TabIndex = 5;
+			txtLogDirectory.Location = new Point(141, 234);
+			txtLogDirectory.Margin = new Padding(4, 5, 4, 5);
+			txtLogDirectory.Name = "txtLogDirectory";
+			txtLogDirectory.Size = new Size(471, 27);
+			txtLogDirectory.TabIndex = 5;
 			// 
 			// txtConnectionString
 			// 
-			this.txtConnectionString.Location = new System.Drawing.Point(106, 194);
-			this.txtConnectionString.Name = "txtConnectionString";
-			this.txtConnectionString.Size = new System.Drawing.Size(354, 20);
-			this.txtConnectionString.TabIndex = 6;
+			txtConnectionString.Location = new Point(141, 298);
+			txtConnectionString.Margin = new Padding(4, 5, 4, 5);
+			txtConnectionString.Name = "txtConnectionString";
+			txtConnectionString.Size = new Size(471, 27);
+			txtConnectionString.TabIndex = 6;
 			// 
 			// btnGuardar
 			// 
-			this.btnGuardar.Location = new System.Drawing.Point(385, 338);
-			this.btnGuardar.Name = "btnGuardar";
-			this.btnGuardar.Size = new System.Drawing.Size(75, 23);
-			this.btnGuardar.TabIndex = 8;
-			this.btnGuardar.Text = "Guardar";
-			this.btnGuardar.UseVisualStyleBackColor = true;
-			this.btnGuardar.Click += new System.EventHandler(this.btnGuardar_Click);
+			btnGuardar.Location = new Point(513, 520);
+			btnGuardar.Margin = new Padding(4, 5, 4, 5);
+			btnGuardar.Name = "btnGuardar";
+			btnGuardar.Size = new Size(100, 35);
+			btnGuardar.TabIndex = 8;
+			btnGuardar.Text = "Guardar";
+			btnGuardar.UseVisualStyleBackColor = true;
+			btnGuardar.Click += btnGuardar_Click;
 			// 
 			// nudIntervalo
 			// 
-			this.nudIntervalo.Location = new System.Drawing.Point(106, 237);
-			this.nudIntervalo.Name = "nudIntervalo";
-			this.nudIntervalo.Size = new System.Drawing.Size(354, 20);
-			this.nudIntervalo.TabIndex = 9;
-			this.nudIntervalo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			nudIntervalo.Location = new Point(141, 365);
+			nudIntervalo.Margin = new Padding(4, 5, 4, 5);
+			nudIntervalo.Name = "nudIntervalo";
+			nudIntervalo.Size = new Size(472, 27);
+			nudIntervalo.TabIndex = 9;
+			nudIntervalo.TextAlign = HorizontalAlignment.Right;
 			// 
 			// label2
 			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(35, 72);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(43, 13);
-			this.label2.TabIndex = 10;
-			this.label2.Text = "Usuario";
+			label2.AutoSize = true;
+			label2.Location = new Point(47, 111);
+			label2.Margin = new Padding(4, 0, 4, 0);
+			label2.Name = "label2";
+			label2.Size = new Size(59, 20);
+			label2.TabIndex = 10;
+			label2.Text = "Usuario";
 			// 
 			// label3
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(35, 116);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(53, 13);
-			this.label3.TabIndex = 11;
-			this.label3.Text = "Password";
+			label3.AutoSize = true;
+			label3.Location = new Point(47, 178);
+			label3.Margin = new Padding(4, 0, 4, 0);
+			label3.Name = "label3";
+			label3.Size = new Size(70, 20);
+			label3.TabIndex = 11;
+			label3.Text = "Password";
 			// 
 			// label4
 			// 
-			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(35, 152);
-			this.label4.Name = "label4";
-			this.label4.Size = new System.Drawing.Size(49, 13);
-			this.label4.TabIndex = 12;
-			this.label4.Text = "Dir. Logs";
+			label4.AutoSize = true;
+			label4.Location = new Point(47, 234);
+			label4.Margin = new Padding(4, 0, 4, 0);
+			label4.Name = "label4";
+			label4.Size = new Size(67, 20);
+			label4.TabIndex = 12;
+			label4.Text = "Dir. Logs";
 			// 
 			// label5
 			// 
-			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(35, 194);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(51, 13);
-			this.label5.TabIndex = 13;
-			this.label5.Text = "Conexión";
+			label5.AutoSize = true;
+			label5.Location = new Point(47, 298);
+			label5.Margin = new Padding(4, 0, 4, 0);
+			label5.Name = "label5";
+			label5.Size = new Size(71, 20);
+			label5.TabIndex = 13;
+			label5.Text = "Conexión";
 			// 
 			// label6
 			// 
-			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(17, 237);
-			this.label6.Name = "label6";
-			this.label6.Size = new System.Drawing.Size(67, 13);
-			this.label6.TabIndex = 14;
-			this.label6.Text = "Tiem de Act.";
+			label6.AutoSize = true;
+			label6.Location = new Point(23, 365);
+			label6.Margin = new Padding(4, 0, 4, 0);
+			label6.Name = "label6";
+			label6.Size = new Size(92, 20);
+			label6.TabIndex = 14;
+			label6.Text = "Tiem de Act.";
 			// 
 			// Form1
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(528, 395);
-			this.Controls.Add(this.label6);
-			this.Controls.Add(this.label5);
-			this.Controls.Add(this.label4);
-			this.Controls.Add(this.label3);
-			this.Controls.Add(this.label2);
-			this.Controls.Add(this.nudIntervalo);
-			this.Controls.Add(this.btnGuardar);
-			this.Controls.Add(this.txtConnectionString);
-			this.Controls.Add(this.txtLogDirectory);
-			this.Controls.Add(this.txtApiPassword);
-			this.Controls.Add(this.txtApiUser);
-			this.Controls.Add(this.txtApiUrl);
-			this.Controls.Add(this.label1);
-			this.Controls.Add(this.btnCargar);
-			this.Name = "Form1";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "Inube v1";
-			((System.ComponentModel.ISupportInitialize)(this.nudIntervalo)).EndInit();
-			this.ResumeLayout(false);
-			this.PerformLayout();
-
+			AutoScaleDimensions = new SizeF(8F, 20F);
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size(704, 608);
+			Controls.Add(label6);
+			Controls.Add(label5);
+			Controls.Add(label4);
+			Controls.Add(label3);
+			Controls.Add(label2);
+			Controls.Add(nudIntervalo);
+			Controls.Add(btnGuardar);
+			Controls.Add(txtConnectionString);
+			Controls.Add(txtLogDirectory);
+			Controls.Add(txtApiPassword);
+			Controls.Add(txtApiUser);
+			Controls.Add(txtApiUrl);
+			Controls.Add(label1);
+			Controls.Add(btnCargar);
+			Margin = new Padding(4, 5, 4, 5);
+			Name = "Form1";
+			StartPosition = FormStartPosition.CenterScreen;
+			Text = "Inube v1";
+			((System.ComponentModel.ISupportInitialize)nudIntervalo).EndInit();
+			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion

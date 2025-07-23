@@ -14,6 +14,6 @@ namespace SincronizadorCore.Utils
 		public string ApiPassword { get; set; } = string.Empty;
 		public string ConnectionStrings { get; set; } = string.Empty;
 		public string LogDirectory { get; set; } = "Logs";
-		public string ApiToken { get; set; } = string.Empty; // NUEVO
+		public string ApiToken { get; set; } = string.Empty;
 	}
 }

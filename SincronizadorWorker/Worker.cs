@@ -5,7 +5,10 @@ using System.Runtime;
 using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using SincronizadorCore.Services;
 using SincronizadorCore.Utils;
+
 
 namespace SincronizadorWorker
 {
@@ -30,8 +33,15 @@ namespace SincronizadorWorker
 
 			_timer = new Timer(async state =>
 			{
-				_logger.LogInformation("Ejecutando sincronización...");
-				await _syncService.SincronizarProductosAsync();
+				_logger.LogInformation("Ejecutando consulta de worker ...");
+				//await _syncService.ConsultarDispositivosAsync();
+				//await _syncService.SincronizarProductosAsync(); //si queremos insertar productos desde la base de datos local a la API REST
+				await _syncService.SincronizarLineasDesdeApiAsync();
+				await _syncService.SincronizarMarcasDesdeApiAsync();
+				await _syncService.SincronizarImpuestosDesdeApiAsync();
+				await _syncService.ObtenerProductosDesdeApiAsync();
+				await _syncService.SincronizarDesdeApiAsync();
+				_logger.LogInformation("Ejecutando sincronizaciÃ³n...");
 			},
 			null,
 			TimeSpan.Zero,
@@ -39,6 +49,7 @@ namespace SincronizadorWorker
 
 			return Task.CompletedTask;
 		}
+
 
 		public override Task StopAsync(CancellationToken cancellationToken)
 		{

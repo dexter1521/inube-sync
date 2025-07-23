@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting.WindowsServices;
+using SincronizadorCore;
+using SincronizadorCore.Utils;
 
 IHost host = Host.CreateDefaultBuilder(args)
 	.ConfigureAppConfiguration((hostingContext, config) =>
