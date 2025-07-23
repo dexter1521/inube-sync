@@ -12,6 +12,7 @@ namespace SincronizadorCore.Models
 {
 	public class ProductoModel
 	{
+		[System.Text.Json.Serialization.JsonPropertyName("clave")]
 		public string articulo { get; set; } = string.Empty;
 		public string descripcion { get; set; } = string.Empty;
 		public string unidad { get; set; } = string.Empty;

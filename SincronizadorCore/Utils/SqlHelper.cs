@@ -27,13 +27,13 @@ namespace SincronizadorCore.Utils
 				{
 					// UPDATE
 					var updateCmd = new SqlCommand(@"
-                UPDATE prods SET
-                    descrip = @descrip,
-                    marca = @marca,
-                    linea = @linea,
-                    precio1 = @precio,
-                    impuesto = @impuesto
-                WHERE articulo = @articulo", connection);
+				UPDATE prods SET
+					descrip = @descrip,
+					marca = @marca,
+					linea = @linea,
+					precio1 = @precio,
+					impuesto = @impuesto
+				WHERE articulo = @articulo", connection);
 
 					updateCmd.Parameters.AddWithValue("@descrip", producto.descripcion);
 					updateCmd.Parameters.AddWithValue("@marca", producto.marca ?? "SYS");
@@ -43,14 +43,14 @@ namespace SincronizadorCore.Utils
 					updateCmd.Parameters.AddWithValue("@articulo", producto.articulo);
 					updateCmd.ExecuteNonQuery();
 
-					LogService.WriteLog("Logs", $"[SQL] Producto actualizado: {producto.articulo}");
+					LogService.WriteLog("Logs", $"[SQL] Producto actualizado: Clave={producto.articulo}, Descripción={producto.descripcion}");
 				}
 				else
 				{
 					// INSERT
 					var insertCmd = new SqlCommand(@"
-                INSERT INTO prods (articulo, descrip, marca, linea, precio1, impuesto)
-                VALUES (@articulo, @descrip, @marca, @linea, @precio, @impuesto)", connection);
+				INSERT INTO prods (articulo, descrip, marca, linea, precio1, impuesto)
+				VALUES (@articulo, @descrip, @marca, @linea, @precio, @impuesto)", connection);
 
 					insertCmd.Parameters.AddWithValue("@articulo", producto.articulo);
 					insertCmd.Parameters.AddWithValue("@descrip", producto.descripcion);
@@ -60,7 +60,7 @@ namespace SincronizadorCore.Utils
 					insertCmd.Parameters.AddWithValue("@impuesto", producto.impuesto ?? "SYS");
 					insertCmd.ExecuteNonQuery();
 
-					LogService.WriteLog("Logs", $"[SQL] Producto insertado: {producto.articulo}");
+					LogService.WriteLog("Logs", $"[SQL] Producto insertado: Clave={producto.articulo}, Descripción={producto.descripcion}");
 				}
 
 				// Validar que la línea existe exactamente antes de actualizar/insertar producto
@@ -76,7 +76,7 @@ namespace SincronizadorCore.Utils
 					insertLineaCmd.ExecuteNonQuery();
 					LogService.WriteLog("Logs", $"[SQL] Línea insertada: {lineaVal}");
 				}
-				
+
 			}
 			catch (Exception ex)
 			{
@@ -84,77 +84,83 @@ namespace SincronizadorCore.Utils
 			}
 		}
 
-        public static void InsertarOActualizarLinea(LineaModel linea, string connectionString)
-        {
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-            string existeQuery = "SELECT COUNT(*) FROM lineas WHERE Linea = @Linea";
-            using var cmdExiste = new SqlCommand(existeQuery, connection);
-            cmdExiste.Parameters.AddWithValue("@Linea", linea.Linea);
-            int count = (int)cmdExiste.ExecuteScalar();
-            if (count > 0)
-            {
-                var updateCmd = new SqlCommand("UPDATE lineas SET Descripcion = @Descripcion WHERE Linea = @Linea", connection);
-                updateCmd.Parameters.AddWithValue("@Descripcion", linea.Descrip);
-                updateCmd.Parameters.AddWithValue("@Linea", linea.Linea);
-                updateCmd.ExecuteNonQuery();
-            }
-            else
-            {
-                var insertCmd = new SqlCommand("INSERT INTO lineas (Linea, Descripcion) VALUES (@Linea, @Descripcion)", connection);
-                insertCmd.Parameters.AddWithValue("@Linea", linea.Linea);
-                insertCmd.Parameters.AddWithValue("@Descripcion", linea.Descrip);
-                insertCmd.ExecuteNonQuery();
-            }
-        }
+		public static void InsertarOActualizarLinea(LineaModel linea, string connectionString)
+		{
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			string existeQuery = "SELECT COUNT(*) FROM lineas WHERE Linea = @Linea";
+			using var cmdExiste = new SqlCommand(existeQuery, connection);
+			cmdExiste.Parameters.AddWithValue("@Linea", linea.Linea);
+			int count = (int)cmdExiste.ExecuteScalar();
+			if (count > 0)
+			{
+				var updateCmd = new SqlCommand("UPDATE lineas SET Descrip = @Descrip WHERE Linea = @Linea", connection);
+				updateCmd.Parameters.AddWithValue("@Descrip", linea.Descrip);
+				updateCmd.Parameters.AddWithValue("@Linea", linea.Linea);
+				updateCmd.ExecuteNonQuery();
+				LogService.WriteLog("Logs", $"[SQL] Línea actualizada: Clave={linea.Linea}, Descripción={linea.Descrip}");
+			}
+			else
+			{
+				var insertCmd = new SqlCommand("INSERT INTO lineas (Linea, Descrip) VALUES (@Linea, @Descrip)", connection);
+				insertCmd.Parameters.AddWithValue("@Linea", linea.Linea);
+				insertCmd.Parameters.AddWithValue("@Descrip", linea.Descrip);
+				insertCmd.ExecuteNonQuery();
+				LogService.WriteLog("Logs", $"[SQL] Línea insertada: Clave={linea.Linea}, Descripción={linea.Descrip}");
+			}
+		}
 
-        public static void InsertarOActualizarMarca(MarcaModel marca, string connectionString)
-        {
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-            string existeQuery = "SELECT COUNT(*) FROM marcas WHERE Marca = @Marca";
-            using var cmdExiste = new SqlCommand(existeQuery, connection);
-            cmdExiste.Parameters.AddWithValue("@Marca", marca.Marca);
-            int count = (int)cmdExiste.ExecuteScalar();
-            if (count > 0)
-            {
-                var updateCmd = new SqlCommand("UPDATE marcas SET Descripcion = @Descripcion WHERE Marca = @Marca", connection);
-                updateCmd.Parameters.AddWithValue("@Descripcion", marca.Descrip);
-                updateCmd.Parameters.AddWithValue("@Marca", marca.Marca);
-                updateCmd.ExecuteNonQuery();
-            }
-            else
-            {
-                var insertCmd = new SqlCommand("INSERT INTO marcas (Marca, Descripcion) VALUES (@Marca, @Descripcion)", connection);
-                insertCmd.Parameters.AddWithValue("@Marca", marca.Marca);
-                insertCmd.Parameters.AddWithValue("@Descripcion", marca.Descrip);
-                insertCmd.ExecuteNonQuery();
-            }
-        }
+		public static void InsertarOActualizarMarca(MarcaModel marca, string connectionString)
+		{
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			string existeQuery = "SELECT COUNT(*) FROM marcas WHERE Marca = @Marca";
+			using var cmdExiste = new SqlCommand(existeQuery, connection);
+			cmdExiste.Parameters.AddWithValue("@Marca", marca.Marca);
+			int count = (int)cmdExiste.ExecuteScalar();
+			if (count > 0)
+			{
+				var updateCmd = new SqlCommand("UPDATE marcas SET Descrip = @Descrip WHERE Marca = @Marca", connection);
+				updateCmd.Parameters.AddWithValue("@Descrip", marca.Descrip);
+				updateCmd.Parameters.AddWithValue("@Marca", marca.Marca);
+				updateCmd.ExecuteNonQuery();
+				LogService.WriteLog("Logs", $"[SQL] Marca actualizada: Clave={marca.Marca}, Descripción={marca.Descrip}");
+			}
+			else
+			{
+				var insertCmd = new SqlCommand("INSERT INTO marcas (Marca, Descrip) VALUES (@Marca, @Descrip)", connection);
+				insertCmd.Parameters.AddWithValue("@Marca", marca.Marca);
+				insertCmd.Parameters.AddWithValue("@Descrip", marca.Descrip);
+				insertCmd.ExecuteNonQuery();
+				LogService.WriteLog("Logs", $"[SQL] Marca insertada: Clave={marca.Marca}, Descripción={marca.Descrip}");
+			}
+		}
 
-        public static void InsertarOActualizarImpuesto(ImpuestoModel impuesto, string connectionString)
-        {
-            using var connection = new SqlConnection(connectionString);
-            connection.Open();
-            string existeQuery = "SELECT COUNT(*) FROM impuestos WHERE Impuesto = @Impuesto";
-            using var cmdExiste = new SqlCommand(existeQuery, connection);
-            cmdExiste.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
-            int count = (int)cmdExiste.ExecuteScalar();
-            if (count > 0)
-            {
-                var updateCmd = new SqlCommand("UPDATE impuestos SET Valor = @Valor WHERE Impuesto = @Impuesto", connection);
-                updateCmd.Parameters.AddWithValue("@Valor", impuesto.Valor);
-                updateCmd.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
-                updateCmd.ExecuteNonQuery();
-            }
-            else
-            {
-                var insertCmd = new SqlCommand("INSERT INTO impuestos (Impuesto, Valor) VALUES (@Impuesto, @Valor)", connection);
-                insertCmd.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
-                insertCmd.Parameters.AddWithValue("@Valor", impuesto.Valor);
-                insertCmd.ExecuteNonQuery();
-            }
-        }
+		public static void InsertarOActualizarImpuesto(ImpuestoModel impuesto, string connectionString)
+		{
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			string existeQuery = "SELECT COUNT(*) FROM impuestos WHERE Impuesto = @Impuesto";
+			using var cmdExiste = new SqlCommand(existeQuery, connection);
+			cmdExiste.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
+			int count = (int)cmdExiste.ExecuteScalar();
+			if (count > 0)
+			{
+				var updateCmd = new SqlCommand("UPDATE impuestos SET Valor = @Valor WHERE Impuesto = @Impuesto", connection);
+				updateCmd.Parameters.AddWithValue("@Valor", impuesto.Valor);
+				updateCmd.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
+				updateCmd.ExecuteNonQuery();
+				LogService.WriteLog("Logs", $"[SQL] Impuesto actualizado: Clave={impuesto.Impuesto}, Valor={impuesto.Valor}");
+			}
+			else
+			{
+				var insertCmd = new SqlCommand("INSERT INTO impuestos (Impuesto, Valor) VALUES (@Impuesto, @Valor)", connection);
+				insertCmd.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
+				insertCmd.Parameters.AddWithValue("@Valor", impuesto.Valor);
+				insertCmd.ExecuteNonQuery();
+				LogService.WriteLog("Logs", $"[SQL] Impuesto insertado: Clave={impuesto.Impuesto}, Valor={impuesto.Valor}");
+			}
+		}
 
 	}
 }
