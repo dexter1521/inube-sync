@@ -59,11 +59,58 @@ namespace SincronizadorCore.Services
 
 		public async Task SincronizarDesdeApiAsync()
 		{
-			var productosApi = await ObtenerProductosDesdeApiAsync();
-
-			foreach (var producto in productosApi)
+			try
 			{
-				SqlHelper.InsertarOActualizarProducto(producto, _settings.ConnectionStrings);
+				// 1. Consultar productos pendientes para este dispositivo
+				var pendientesResponse = await _httpClient.GetAsync($"/api/prods_download/pendientes/{_settings.ApiUser}");
+				if (!pendientesResponse.IsSuccessStatusCode)
+				{
+					LogService.WriteLog(_settings.LogDirectory, $"[API] Error al obtener pendientes: {pendientesResponse.StatusCode}");
+					return;
+				}
+
+				var pendientesJson = await pendientesResponse.Content.ReadAsStringAsync();
+				var pendientes = JsonSerializer.Deserialize<List<SincronizadorCore.Models.ProdPendienteModel>>(pendientesJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<SincronizadorCore.Models.ProdPendienteModel>();
+
+				if (pendientes.Count == 0)
+				{
+					LogService.WriteLog(_settings.LogDirectory, "[SYNC] No hay productos pendientes para actualizar precios.");
+					return;
+				}
+
+				// 2. Obtener todos los productos de la API
+				var productosApi = await ObtenerProductosDesdeApiAsync();
+
+				// 3. Filtrar solo los productos pendientes
+				var clavesPendientes = new HashSet<string>(pendientes.Select(p => p.Clave));
+				var productosActualizar = productosApi.Where(p => clavesPendientes.Contains(p.articulo)).ToList();
+
+				foreach (var producto in productosActualizar)
+				{
+					SqlHelper.InsertarOActualizarProducto(producto, _settings.ConnectionStrings);
+
+					// Confirmar la actualización con el endpoint POST
+					var pendiente = pendientes.FirstOrDefault(p => p.Clave == producto.articulo);
+					if (pendiente != null)
+					{
+						var confirmContent = new StringContent($"{{\"id\": {pendiente.Id}}}", Encoding.UTF8, "application/json");
+						var confirmResponse = await _httpClient.PostAsync("/api/prods_download/aplicar", confirmContent);
+						if (confirmResponse.IsSuccessStatusCode)
+						{
+							LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Confirmado producto pendiente id={pendiente.Id} clave={pendiente.Clave}");
+						}
+						else
+						{
+							LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Error al confirmar producto pendiente id={pendiente.Id} clave={pendiente.Clave}: {confirmResponse.StatusCode}");
+						}
+					}
+				}
+
+				LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Se actualizaron precios de {productosActualizar.Count} productos pendientes y se confirmó cada uno.");
+			}
+			catch (Exception ex)
+			{
+				LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Error en sincronización de precios pendientes: {ex.Message}");
 			}
 		}
 
