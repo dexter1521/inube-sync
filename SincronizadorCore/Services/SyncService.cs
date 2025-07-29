@@ -87,6 +87,19 @@ namespace SincronizadorCore.Services
 
 				foreach (var producto in productosActualizar)
 				{
+					// Validar y registrar/actualizar línea
+					var linea = new LineaModel { Linea = producto.linea ?? "SYS", Descrip = producto.linea ?? "" };
+					SqlHelper.InsertarOActualizarLinea(linea, _settings.ConnectionStrings);
+
+					// Validar y registrar/actualizar marca
+					var marca = new MarcaModel { Marca = producto.marca ?? "SYS", Descrip = producto.marca ?? "" };
+					SqlHelper.InsertarOActualizarMarca(marca, _settings.ConnectionStrings);
+
+					// Validar y registrar/actualizar impuesto
+					var impuesto = new ImpuestoModel { Impuesto = producto.impuesto ?? "SYS", Valor = 0 };
+					SqlHelper.InsertarOActualizarImpuesto(impuesto, _settings.ConnectionStrings);
+
+					// Actualizar producto
 					SqlHelper.InsertarOActualizarProducto(producto, _settings.ConnectionStrings);
 
 					// Confirmar la actualización con el endpoint POST

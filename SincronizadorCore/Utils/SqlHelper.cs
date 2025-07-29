@@ -31,15 +31,97 @@ namespace SincronizadorCore.Utils
 					descrip = @descrip,
 					marca = @marca,
 					linea = @linea,
-					precio1 = @precio,
-					impuesto = @impuesto
+					costo_u = @costoultimo,
+					precio1 = @precio1,
+					precio2 = @precio2,
+					precio3 = @precio3,
+					precio4 = @precio4,
+					precio5 = @precio5,
+					precio6 = @precio6,
+					precio7 = @precio7,
+					precio8 = @precio8,
+					precio9 = @precio9,
+					precio10 = @precio10,
+					u1 = @u1,
+					u2 = @u2,
+					u3 = @u3,
+					u4 = @u4,
+					u5 = @u5,
+					u6 = @u6,
+					u7 = @u7,
+					u8 = @u8,
+					u9 = @u9,
+					u10 = @u10,
+					ubicacion = @ubicacion,
+					unidad = @unidad,
+					bloqueado = @bloqueado,
+					existencia = @existencia,
+					impuesto = @impuesto,
+					fabricante = @fabricante,
+					claveprodserv = @claveprodserv,
+					claveunidad = @claveunidad,
+					c2 = @c2,
+					c3 = @c3,
+					c4 = @c4,
+					c5 = @c5,
+					c6 = @c6,
+					c7 = @c7,
+					c8 = @c8,
+					c9 = @c9,
+					c10 = @c10,
+					paraventa = @paraventa,
+					invent = @invent,
+					granel = @granel,
+					bajocosto = @bajocosto,
+					speso = @speso
 				WHERE articulo = @articulo", connection);
 
 					updateCmd.Parameters.AddWithValue("@descrip", producto.descripcion);
 					updateCmd.Parameters.AddWithValue("@marca", producto.marca ?? "SYS");
 					updateCmd.Parameters.AddWithValue("@linea", producto.linea ?? "SYS");
-					updateCmd.Parameters.AddWithValue("@precio", producto.precio1);
+					updateCmd.Parameters.AddWithValue("@costoultimo", producto.costoultimo);
+					updateCmd.Parameters.AddWithValue("@precio1", producto.precio1);
+					updateCmd.Parameters.AddWithValue("@precio2", producto.precio2);
+					updateCmd.Parameters.AddWithValue("@precio3", producto.precio3);
+					updateCmd.Parameters.AddWithValue("@precio4", producto.precio4);
+					updateCmd.Parameters.AddWithValue("@precio5", producto.precio5);
+					updateCmd.Parameters.AddWithValue("@precio6", producto.precio6);
+					updateCmd.Parameters.AddWithValue("@precio7", producto.precio7);
+					updateCmd.Parameters.AddWithValue("@precio8", producto.precio8);
+					updateCmd.Parameters.AddWithValue("@precio9", producto.precio9);
+					updateCmd.Parameters.AddWithValue("@precio10", producto.precio10);
+					updateCmd.Parameters.AddWithValue("@u1", producto.u1);
+					updateCmd.Parameters.AddWithValue("@u2", producto.u2);
+					updateCmd.Parameters.AddWithValue("@u3", producto.u3);
+					updateCmd.Parameters.AddWithValue("@u4", producto.u4);
+					updateCmd.Parameters.AddWithValue("@u5", producto.u5);
+					updateCmd.Parameters.AddWithValue("@u6", producto.u6);
+					updateCmd.Parameters.AddWithValue("@u7", producto.u7);
+					updateCmd.Parameters.AddWithValue("@u8", producto.u8);
+					updateCmd.Parameters.AddWithValue("@u9", producto.u9);
+					updateCmd.Parameters.AddWithValue("@u10", producto.u10);
+					updateCmd.Parameters.AddWithValue("@ubicacion", producto.ubicacion ?? "");
+					updateCmd.Parameters.AddWithValue("@unidad", producto.unidad ?? "");
+					updateCmd.Parameters.AddWithValue("@bloqueado", producto.bloqueado);
+					updateCmd.Parameters.AddWithValue("@existencia", producto.existencia);
 					updateCmd.Parameters.AddWithValue("@impuesto", producto.impuesto ?? "SYS");
+					updateCmd.Parameters.AddWithValue("@fabricante", producto.fabricante ?? "SYS");
+					updateCmd.Parameters.AddWithValue("@claveprodserv", producto.claveprodserv ?? "");
+					updateCmd.Parameters.AddWithValue("@claveunidad", producto.claveunidad ?? "");
+					updateCmd.Parameters.AddWithValue("@c2", producto.c2);
+					updateCmd.Parameters.AddWithValue("@c3", producto.c3);
+					updateCmd.Parameters.AddWithValue("@c4", producto.c4);
+					updateCmd.Parameters.AddWithValue("@c5", producto.c5);
+					updateCmd.Parameters.AddWithValue("@c6", producto.c6);
+					updateCmd.Parameters.AddWithValue("@c7", producto.c7);
+					updateCmd.Parameters.AddWithValue("@c8", producto.c8);
+					updateCmd.Parameters.AddWithValue("@c9", producto.c9);
+					updateCmd.Parameters.AddWithValue("@c10", producto.c10);
+					updateCmd.Parameters.AddWithValue("@paraventa", producto.paraventa);
+					updateCmd.Parameters.AddWithValue("@invent", producto.invent);
+					updateCmd.Parameters.AddWithValue("@granel", producto.granel);
+					updateCmd.Parameters.AddWithValue("@bajocosto", producto.bajocosto);
+					updateCmd.Parameters.AddWithValue("@speso", producto.speso);
 					updateCmd.Parameters.AddWithValue("@articulo", producto.articulo);
 					updateCmd.ExecuteNonQuery();
 
@@ -49,15 +131,63 @@ namespace SincronizadorCore.Utils
 				{
 					// INSERT
 					var insertCmd = new SqlCommand(@"
-				INSERT INTO prods (articulo, descrip, marca, linea, precio1, impuesto)
-				VALUES (@articulo, @descrip, @marca, @linea, @precio, @impuesto)", connection);
+				INSERT INTO prods (
+					articulo, descrip, marca, linea, costo_u, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10,
+					u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, ubicacion, unidad, bloqueado, existencia, impuesto, fabricante, claveprodserv, claveunidad,
+					c2, c3, c4, c5, c6, c7, c8, c9, c10, paraventa, invent, granel, bajocosto, speso
+				) VALUES (
+					@articulo, @descrip, @marca, @linea, @costoultimo, @precio1, @precio2, @precio3, @precio4, @precio5, @precio6, @precio7, @precio8, @precio9, @precio10,
+					@u1, @u2, @u3, @u4, @u5, @u6, @u7, @u8, @u9, @u10, @ubicacion, @unidad, @bloqueado, @existencia, @impuesto, @fabricante, @claveprodserv, @claveunidad,
+					@c2, @c3, @c4, @c5, @c6, @c7, @c8, @c9, @c10, @paraventa, @invent, @granel, @bajocosto, @speso
+				)", connection);
 
 					insertCmd.Parameters.AddWithValue("@articulo", producto.articulo);
 					insertCmd.Parameters.AddWithValue("@descrip", producto.descripcion);
 					insertCmd.Parameters.AddWithValue("@marca", producto.marca ?? "SYS");
 					insertCmd.Parameters.AddWithValue("@linea", producto.linea ?? "SYS");
-					insertCmd.Parameters.AddWithValue("@precio", producto.precio1);
+					insertCmd.Parameters.AddWithValue("@costoultimo", producto.costoultimo);
+					insertCmd.Parameters.AddWithValue("@precio1", producto.precio1);
+					insertCmd.Parameters.AddWithValue("@precio2", producto.precio2);
+					insertCmd.Parameters.AddWithValue("@precio3", producto.precio3);
+					insertCmd.Parameters.AddWithValue("@precio4", producto.precio4);
+					insertCmd.Parameters.AddWithValue("@precio5", producto.precio5);
+					insertCmd.Parameters.AddWithValue("@precio6", producto.precio6);
+					insertCmd.Parameters.AddWithValue("@precio7", producto.precio7);
+					insertCmd.Parameters.AddWithValue("@precio8", producto.precio8);
+					insertCmd.Parameters.AddWithValue("@precio9", producto.precio9);
+					insertCmd.Parameters.AddWithValue("@precio10", producto.precio10);
+					insertCmd.Parameters.AddWithValue("@u1", producto.u1);
+					insertCmd.Parameters.AddWithValue("@u2", producto.u2);
+					insertCmd.Parameters.AddWithValue("@u3", producto.u3);
+					insertCmd.Parameters.AddWithValue("@u4", producto.u4);
+					insertCmd.Parameters.AddWithValue("@u5", producto.u5);
+					insertCmd.Parameters.AddWithValue("@u6", producto.u6);
+					insertCmd.Parameters.AddWithValue("@u7", producto.u7);
+					insertCmd.Parameters.AddWithValue("@u8", producto.u8);
+					insertCmd.Parameters.AddWithValue("@u9", producto.u9);
+					insertCmd.Parameters.AddWithValue("@u10", producto.u10);
+					insertCmd.Parameters.AddWithValue("@ubicacion", producto.ubicacion ?? "");
+					insertCmd.Parameters.AddWithValue("@unidad", producto.unidad ?? "");
+					insertCmd.Parameters.AddWithValue("@bloqueado", producto.bloqueado);
+					insertCmd.Parameters.AddWithValue("@existencia", producto.existencia);
 					insertCmd.Parameters.AddWithValue("@impuesto", producto.impuesto ?? "SYS");
+					insertCmd.Parameters.AddWithValue("@fabricante", producto.fabricante ?? "SYS");
+					insertCmd.Parameters.AddWithValue("@claveprodserv", producto.claveprodserv ?? "");
+					insertCmd.Parameters.AddWithValue("@claveunidad", producto.claveunidad ?? "");
+					insertCmd.Parameters.AddWithValue("@c2", producto.c2);
+					insertCmd.Parameters.AddWithValue("@c3", producto.c3);
+					insertCmd.Parameters.AddWithValue("@c4", producto.c4);
+					insertCmd.Parameters.AddWithValue("@c5", producto.c5);
+					insertCmd.Parameters.AddWithValue("@c6", producto.c6);
+					insertCmd.Parameters.AddWithValue("@c7", producto.c7);
+					insertCmd.Parameters.AddWithValue("@c8", producto.c8);
+					insertCmd.Parameters.AddWithValue("@c9", producto.c9);
+					insertCmd.Parameters.AddWithValue("@c10", producto.c10);
+					insertCmd.Parameters.AddWithValue("@paraventa", producto.paraventa);
+					insertCmd.Parameters.AddWithValue("@invent", producto.invent);
+					insertCmd.Parameters.AddWithValue("@granel", producto.granel);
+					insertCmd.Parameters.AddWithValue("@bajocosto", producto.bajocosto);
+					insertCmd.Parameters.AddWithValue("@speso", producto.speso);
 					insertCmd.ExecuteNonQuery();
 
 					LogService.WriteLog("Logs", $"[SQL] Producto insertado: Clave={producto.articulo}, Descripción={producto.descripcion}");
