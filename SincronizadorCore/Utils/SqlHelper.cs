@@ -55,7 +55,6 @@ namespace SincronizadorCore.Utils
 					ubicacion = @ubicacion,
 					unidad = @unidad,
 					bloqueado = @bloqueado,
-					existencia = @existencia,
 					impuesto = @impuesto,
 					fabricante = @fabricante,
 					claveprodserv = @claveprodserv,
@@ -103,7 +102,6 @@ namespace SincronizadorCore.Utils
 					updateCmd.Parameters.AddWithValue("@ubicacion", producto.ubicacion ?? "");
 					updateCmd.Parameters.AddWithValue("@unidad", producto.unidad ?? "");
 					updateCmd.Parameters.AddWithValue("@bloqueado", producto.bloqueado);
-					updateCmd.Parameters.AddWithValue("@existencia", producto.existencia);
 					updateCmd.Parameters.AddWithValue("@impuesto", producto.impuesto ?? "SYS");
 					updateCmd.Parameters.AddWithValue("@fabricante", producto.fabricante ?? "SYS");
 					updateCmd.Parameters.AddWithValue("@claveprodserv", producto.claveprodserv ?? "");
@@ -133,11 +131,11 @@ namespace SincronizadorCore.Utils
 					var insertCmd = new SqlCommand(@"
 				INSERT INTO prods (
 					articulo, descrip, marca, linea, costo_u, precio1, precio2, precio3, precio4, precio5, precio6, precio7, precio8, precio9, precio10,
-					u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, ubicacion, unidad, bloqueado, existencia, impuesto, fabricante, claveprodserv, claveunidad,
+					u1, u2, u3, u4, u5, u6, u7, u8, u9, u10, ubicacion, unidad, bloqueado, impuesto, fabricante, claveprodserv, claveunidad,
 					c2, c3, c4, c5, c6, c7, c8, c9, c10, paraventa, invent, granel, bajocosto, speso
 				) VALUES (
 					@articulo, @descrip, @marca, @linea, @costoultimo, @precio1, @precio2, @precio3, @precio4, @precio5, @precio6, @precio7, @precio8, @precio9, @precio10,
-					@u1, @u2, @u3, @u4, @u5, @u6, @u7, @u8, @u9, @u10, @ubicacion, @unidad, @bloqueado, @existencia, @impuesto, @fabricante, @claveprodserv, @claveunidad,
+					@u1, @u2, @u3, @u4, @u5, @u6, @u7, @u8, @u9, @u10, @ubicacion, @unidad, @bloqueado, @impuesto, @fabricante, @claveprodserv, @claveunidad,
 					@c2, @c3, @c4, @c5, @c6, @c7, @c8, @c9, @c10, @paraventa, @invent, @granel, @bajocosto, @speso
 				)", connection);
 
@@ -169,7 +167,6 @@ namespace SincronizadorCore.Utils
 					insertCmd.Parameters.AddWithValue("@ubicacion", producto.ubicacion ?? "");
 					insertCmd.Parameters.AddWithValue("@unidad", producto.unidad ?? "");
 					insertCmd.Parameters.AddWithValue("@bloqueado", producto.bloqueado);
-					insertCmd.Parameters.AddWithValue("@existencia", producto.existencia);
 					insertCmd.Parameters.AddWithValue("@impuesto", producto.impuesto ?? "SYS");
 					insertCmd.Parameters.AddWithValue("@fabricante", producto.fabricante ?? "SYS");
 					insertCmd.Parameters.AddWithValue("@claveprodserv", producto.claveprodserv ?? "");
