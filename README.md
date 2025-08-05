@@ -20,11 +20,25 @@ SincronizadorWorker/              # Servicio de sincronización
 packages/                         # Paquetes NuGet
 ```
 
-## Características
-- Sincronización de configuraciones y datos entre aplicaciones.
-- Interfaces gráficas para administración y monitoreo.
-- Servicio de sincronización automatizada.
-- Modularidad y escalabilidad.
+
+## Lógica de sincronización de productos y catálogos
+
+- **Subida idempotente:** Solo se suben productos, líneas, marcas e impuestos que no han sido exportados (campo `exportado = 0`).
+- **Actualización vs alta:**
+  - Si el producto ya existe en la nube (GET exitoso), se hace PUT (actualización).
+  - Si no existe, se hace POST (alta).
+- **Marcado inmediato:** Tras un POST/PUT exitoso, el producto se marca como exportado inmediatamente en la base local.
+- **Evita duplicados:** Si un POST responde 422 (clave ya existe o error de validación), no se reintenta ni se marca como exportado.
+- **Validaciones automáticas:**
+  - Si el campo `unidad` está vacío, se envía como "PZA".
+  - Si el campo `claveprodserv` está vacío, se envía como "01010101".
+  - Si el campo `claveunidad` está vacío, se envía como "H87".
+- **Catálogos auxiliares:** Líneas, marcas e impuestos se crean automáticamente si no existen en la nube y se marcan como exportados tras POST exitoso.
+- **Sincronización descendente:**
+  - Descarga productos pendientes desde la nube y actualiza la base local.
+  - Confirma cada producto actualizado ante el API.
+- **Logs detallados:** Cada operación relevante (POST, PUT, errores, validaciones) queda registrada en archivos de log.
+
 
 ## Requisitos
 - Windows 10/11

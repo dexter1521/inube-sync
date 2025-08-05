@@ -14,6 +14,9 @@ namespace SincronizadorCore.Utils
 		public string ApiPassword { get; set; } = string.Empty;
 		public string ConnectionStrings { get; set; } = string.Empty;
 		public string LogDirectory { get; set; } = "Logs";
-		public string ApiToken { get; set; } = string.Empty;
+	   public string ApiToken { get; set; } = string.Empty;
+
+	   // Bandera para subir datos locales a la nube
+	   public bool SubirDatosANube { get; set; } = false;
 	}
 }

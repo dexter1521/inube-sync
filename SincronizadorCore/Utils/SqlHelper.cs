@@ -1,16 +1,186 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
-using Microsoft.Data;
 using Microsoft.Data.SqlClient;
 using SincronizadorCore.Models;
-using SincronizadorCore.Utils;
 
 
 namespace SincronizadorCore.Utils
 {
 	public static class SqlHelper
 	{
+		// Marcar productos como exportados
+		public static void MarcarProductosComoExportados(List<string> articulos, string connectionString)
+		{
+			if (articulos == null || articulos.Count == 0)
+				return;
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			foreach (var articulo in articulos)
+			{
+				var cmd = new SqlCommand("UPDATE prods SET exportado = 1 WHERE articulo = @articulo", connection);
+				cmd.Parameters.AddWithValue("@articulo", articulo);
+				cmd.ExecuteNonQuery();
+			}
+		}
+		// Obtener todos los productos locales
+		public static List<ProductoModel> ObtenerTodosProductos(string connectionString)
+		{
+			var productos = new List<ProductoModel>();
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			var cmd = new SqlCommand("SELECT * FROM prods WHERE exportado = 0", connection);
+			using var reader = cmd.ExecuteReader();
+			while (reader.Read())
+			{
+				var producto = new ProductoModel
+				{
+					articulo = reader["articulo"].ToString() ?? string.Empty,
+					descripcion = reader["descrip"].ToString() ?? string.Empty,
+					marca = reader["marca"].ToString() ?? "SYS",
+					linea = reader["linea"].ToString() ?? "SYS",
+					unidad = reader["unidad"].ToString() ?? string.Empty,
+					impuesto = reader["impuesto"].ToString() ?? string.Empty,
+					costoultimo = reader["costo_u"] != DBNull.Value ? Convert.ToDecimal(reader["costo_u"]) : 0,
+					precio1 = reader["precio1"] != DBNull.Value ? Convert.ToDecimal(reader["precio1"]) : 0,
+					precio2 = reader["precio2"] != DBNull.Value ? Convert.ToDecimal(reader["precio2"]) : 0,
+					precio3 = reader["precio3"] != DBNull.Value ? Convert.ToDecimal(reader["precio3"]) : 0,
+					precio4 = reader["precio4"] != DBNull.Value ? Convert.ToDecimal(reader["precio4"]) : 0,
+					precio5 = reader["precio5"] != DBNull.Value ? Convert.ToDecimal(reader["precio5"]) : 0,
+					precio6 = reader["precio6"] != DBNull.Value ? Convert.ToDecimal(reader["precio6"]) : 0,
+					precio7 = reader["precio7"] != DBNull.Value ? Convert.ToDecimal(reader["precio7"]) : 0,
+					precio8 = reader["precio8"] != DBNull.Value ? Convert.ToDecimal(reader["precio8"]) : 0,
+					precio9 = reader["precio9"] != DBNull.Value ? Convert.ToDecimal(reader["precio9"]) : 0,
+					precio10 = reader["precio10"] != DBNull.Value ? Convert.ToDecimal(reader["precio10"]) : 0,
+					u1 = reader["u1"] != DBNull.Value ? Convert.ToDecimal(reader["u1"]) : 0,
+					u2 = reader["u2"] != DBNull.Value ? Convert.ToDecimal(reader["u2"]) : 0,
+					u3 = reader["u3"] != DBNull.Value ? Convert.ToDecimal(reader["u3"]) : 0,
+					u4 = reader["u4"] != DBNull.Value ? Convert.ToDecimal(reader["u4"]) : 0,
+					u5 = reader["u5"] != DBNull.Value ? Convert.ToDecimal(reader["u5"]) : 0,
+					u6 = reader["u6"] != DBNull.Value ? Convert.ToDecimal(reader["u6"]) : 0,
+					u7 = reader["u7"] != DBNull.Value ? Convert.ToDecimal(reader["u7"]) : 0,
+					u8 = reader["u8"] != DBNull.Value ? Convert.ToDecimal(reader["u8"]) : 0,
+					u9 = reader["u9"] != DBNull.Value ? Convert.ToDecimal(reader["u9"]) : 0,
+					u10 = reader["u10"] != DBNull.Value ? Convert.ToDecimal(reader["u10"]) : 0,
+					c2 = reader["c2"] != DBNull.Value ? Convert.ToDecimal(reader["c2"]) : 0,
+					c3 = reader["c3"] != DBNull.Value ? Convert.ToDecimal(reader["c3"]) : 0,
+					c4 = reader["c4"] != DBNull.Value ? Convert.ToDecimal(reader["c4"]) : 0,
+					c5 = reader["c5"] != DBNull.Value ? Convert.ToDecimal(reader["c5"]) : 0,
+					c6 = reader["c6"] != DBNull.Value ? Convert.ToDecimal(reader["c6"]) : 0,
+					c7 = reader["c7"] != DBNull.Value ? Convert.ToDecimal(reader["c7"]) : 0,
+					c8 = reader["c8"] != DBNull.Value ? Convert.ToDecimal(reader["c8"]) : 0,
+					c9 = reader["c9"] != DBNull.Value ? Convert.ToDecimal(reader["c9"]) : 0,
+					c10 = reader["c10"] != DBNull.Value ? Convert.ToDecimal(reader["c10"]) : 0,
+					paraventa = reader["paraventa"] as int? ?? 1,
+					invent = reader["invent"] as int? ?? 1,
+					granel = reader["granel"] as int? ?? 0,
+					bajocosto = reader["bajocosto"] as int? ?? 0,
+					speso = reader["speso"] as int? ?? 0
+				};
+				productos.Add(producto);
+			}
+			return productos;
+		}
 
+		// Obtener todas las líneas locales no exportadas
+		public static List<LineaModel> ObtenerLineasNoExportadas(string connectionString)
+		{
+			var lineas = new List<LineaModel>();
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			var cmd = new SqlCommand("SELECT * FROM lineas WHERE exportado = 0", connection);
+			using var reader = cmd.ExecuteReader();
+			while (reader.Read())
+			{
+				var linea = new LineaModel
+				{
+					Linea = reader["Linea"].ToString() ?? string.Empty,
+					Descrip = reader["Descrip"].ToString() ?? string.Empty
+				};
+				lineas.Add(linea);
+			}
+			return lineas;
+		}
+
+		// Marcar líneas como exportadas
+		public static void MarcarLineasComoExportadas(List<string> lineas, string connectionString)
+		{
+			if (lineas == null || lineas.Count == 0)
+				return;
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			foreach (var linea in lineas)
+			{
+				var cmd = new SqlCommand("UPDATE lineas SET exportado = 1 WHERE linea = @linea", connection);
+				cmd.Parameters.AddWithValue("@linea", linea);
+				int rows = cmd.ExecuteNonQuery();
+				if (rows == 0)
+				{
+					LogService.WriteLog("Logs", $"[WARN] No se pudo marcar como exportada la línea: {linea}");
+				}
+			}
+		}
+
+		// Obtener todas las marcas locales no exportadas
+		public static List<MarcaModel> ObtenerMarcasNoExportadas(string connectionString)
+		{
+			var marcas = new List<MarcaModel>();
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			var cmd = new SqlCommand("SELECT * FROM marcas WHERE exportado = 0", connection);
+			using var reader = cmd.ExecuteReader();
+			while (reader.Read())
+			{
+				var marca = new MarcaModel
+				{
+					Marca = reader["Marca"].ToString() ?? string.Empty,
+					Descrip = reader["Descrip"].ToString() ?? string.Empty
+				};
+				marcas.Add(marca);
+			}
+			return marcas;
+		}
+
+		// Marcar marcas como exportadas
+		public static void MarcarMarcasComoExportadas(List<string> marcas, string connectionString)
+		{
+			if (marcas == null || marcas.Count == 0)
+				return;
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			foreach (var marca in marcas)
+			{
+				var cmd = new SqlCommand("UPDATE marcas SET exportado = 1 WHERE marca = @marca", connection);
+				cmd.Parameters.AddWithValue("@marca", marca);
+				int rows = cmd.ExecuteNonQuery();
+				if (rows == 0)
+				{
+					LogService.WriteLog("Logs", $"[WARN] No se pudo marcar como exportada la marca: {marca}");
+				}
+			}
+		}
+
+		// Obtener todos los impuestos locales
+		public static List<ImpuestoModel> ObtenerTodosImpuestos(string connectionString)
+		{
+			var impuestos = new List<ImpuestoModel>();
+			using var connection = new SqlConnection(connectionString);
+			connection.Open();
+			var cmd = new SqlCommand("SELECT * FROM impuestos", connection);
+			using var reader = cmd.ExecuteReader();
+			while (reader.Read())
+			{
+				var impuesto = new ImpuestoModel
+				{
+					Impuesto = reader["Impuesto"].ToString() ?? string.Empty,
+					Valor = reader["Valor"] as decimal? ?? 0
+				};
+				impuestos.Add(impuesto);
+			}
+			return impuestos;
+		}
+
+		// Comienza logical para insertar o actualizar productos desde la API
 		public static void InsertarOActualizarProducto(ProductoModel producto, string connectionString)
 		{
 			try
