@@ -51,122 +51,145 @@ namespace SincronizadorCore.Services
 				var marcasVerificadas = new HashSet<string>();
 				var impuestosVerificados = new HashSet<string>();
 
+				bool primeraVuelta = true;
+				List<ProductoModel> productosOrdenados = new List<ProductoModel>();
 				while (true)
 				{
 					var productos = SqlHelper.ObtenerTodosProductos(_settings.ConnectionStrings);
 					if (productos == null || productos.Count == 0)
 						break;
-					// Procesar solo el primer producto pendiente
-					var producto = productos[0];
-					// 1. Validar/crear línea solo si no se ha verificado
-					if (!string.IsNullOrWhiteSpace(producto.linea) && !lineasVerificadas.Contains(producto.linea))
+					// Ordenar solo la primera vez para mantener el ciclo incremental
+					if (primeraVuelta)
 					{
-						var getLinea = await _httpClient.GetAsync($"/api/lineas/{Uri.EscapeDataString(producto.linea)}");
+						productosOrdenados = new List<ProductoModel>(productos);
+						productosOrdenados.Sort((a, b) =>
+						{
+							int cmp = string.Compare(a.linea, b.linea, StringComparison.OrdinalIgnoreCase);
+							if (cmp != 0) return cmp;
+							return string.Compare(a.marca, b.marca, StringComparison.OrdinalIgnoreCase);
+						});
+						primeraVuelta = false;
+					}
+					// Buscar el primer producto pendiente en el orden establecido
+					ProductoModel? producto = productosOrdenados.FirstOrDefault(p => productos.Exists(x => x.articulo == p.articulo));
+					if (producto == null)
+						break;
+					var productoNoNull = producto!;
+					// 1. Validar/crear línea solo si no se ha verificado
+					if (!string.IsNullOrWhiteSpace(productoNoNull.linea) && !lineasVerificadas.Contains(productoNoNull.linea))
+					{
+						var getLinea = await _httpClient.GetAsync($"/api/lineas/{Uri.EscapeDataString(productoNoNull.linea)}");
 						if (!getLinea.IsSuccessStatusCode)
 						{
-							var lineaLocal = lineasNoExportadas.Find(l => l.Linea == producto.linea);
+							lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.ConnectionStrings);
+							var lineaLocal = lineasNoExportadas.Find(l => l.Linea == productoNoNull.linea);
 							if (lineaLocal != null)
 							{
 								var lineaContent = new StringContent(JsonSerializer.Serialize(lineaLocal), Encoding.UTF8, "application/json");
 								var postLinea = await _httpClient.PostAsync("/api/lineas", lineaContent);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Línea auto-creada para producto {producto.articulo}: {producto.linea} - {postLinea.StatusCode}");
+								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Línea auto-creada para producto {productoNoNull.articulo}: {productoNoNull.linea} - {postLinea.StatusCode}");
 								if (postLinea.IsSuccessStatusCode)
 								{
-									SqlHelper.MarcarLineasComoExportadas(new List<string> { producto.linea }, _settings.ConnectionStrings);
-									LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Línea marcada como exportada: {producto.linea}");
+									SqlHelper.MarcarLineasComoExportadas(new List<string> { productoNoNull.linea }, _settings.ConnectionStrings);
+									LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Línea marcada como exportada: {productoNoNull.linea}");
+									// Refrescar la lista después de marcar como exportada
+									lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.ConnectionStrings);
 								}
 							}
 						}
-						lineasVerificadas.Add(producto.linea);
+						lineasVerificadas.Add(productoNoNull.linea);
 					}
 					// (Eliminado control de productosProcesados, ya no es necesario)
 					{
-						var getMarca = await _httpClient.GetAsync($"/api/marcas/{Uri.EscapeDataString(producto.marca)}");
+						var getMarca = await _httpClient.GetAsync($"/api/marcas/{Uri.EscapeDataString(productoNoNull.marca)}");
 						if (!getMarca.IsSuccessStatusCode)
 						{
-							var marcaLocal = marcasNoExportadas.Find(m => m.Marca == producto.marca);
+							marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.ConnectionStrings);
+							var marcaLocal = marcasNoExportadas.Find(m => m.Marca == productoNoNull.marca);
 							if (marcaLocal != null)
 							{
 								var marcaContent = new StringContent(JsonSerializer.Serialize(marcaLocal), Encoding.UTF8, "application/json");
 								var postMarca = await _httpClient.PostAsync("/api/marcas", marcaContent);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Marca auto-creada para producto {producto.articulo}: {producto.marca} - {postMarca.StatusCode}");
+								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Marca auto-creada para producto {productoNoNull.articulo}: {productoNoNull.marca} - {postMarca.StatusCode}");
 								if (postMarca.IsSuccessStatusCode)
 								{
-									SqlHelper.MarcarMarcasComoExportadas(new List<string> { producto.marca }, _settings.ConnectionStrings);
-									LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Marca marcada como exportada: {producto.marca}");
+									SqlHelper.MarcarMarcasComoExportadas(new List<string> { productoNoNull.marca }, _settings.ConnectionStrings);
+									LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Marca marcada como exportada: {productoNoNull.marca}");
+									// Refrescar la lista después de marcar como exportada
+									marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.ConnectionStrings);
 								}
 							}
 						}
-						marcasVerificadas.Add(producto.marca);
+						marcasVerificadas.Add(productoNoNull.marca);
 					}
 
 					// 3. Validar/crear impuesto solo si no se ha verificado
-					if (!string.IsNullOrWhiteSpace(producto.impuesto) && !impuestosVerificados.Contains(producto.impuesto))
+					if (!string.IsNullOrWhiteSpace(productoNoNull.impuesto) && !impuestosVerificados.Contains(productoNoNull.impuesto))
 					{
-						var getImpuesto = await _httpClient.GetAsync($"/api/impuestos/{Uri.EscapeDataString(producto.impuesto)}");
+						var getImpuesto = await _httpClient.GetAsync($"/api/impuestos/{Uri.EscapeDataString(productoNoNull.impuesto)}");
 						if (!getImpuesto.IsSuccessStatusCode)
 						{
-							var impuestoLocal = impuestosLocales.Find(i => i.Impuesto == producto.impuesto);
+							var impuestoLocal = impuestosLocales.Find(i => i.Impuesto == productoNoNull.impuesto);
 							if (impuestoLocal != null)
 							{
 								var impuestoContent = new StringContent(JsonSerializer.Serialize(impuestoLocal), Encoding.UTF8, "application/json");
 								var postImpuesto = await _httpClient.PostAsync("/api/impuestos", impuestoContent);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Impuesto auto-creado para producto {producto.articulo}: {producto.impuesto} - {postImpuesto.StatusCode}");
+								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Impuesto auto-creado para producto {productoNoNull.articulo}: {productoNoNull.impuesto} - {postImpuesto.StatusCode}");
 							}
 						}
-						impuestosVerificados.Add(producto.impuesto);
+						impuestosVerificados.Add(productoNoNull.impuesto);
 					}
 
 					// 4. Subir producto usando ProductoUploadModel
 					var upload = new ProductoUploadModel
 					{
-						Clave = producto.articulo,
-						Descripcion = producto.descripcion,
-						Precio = producto.precio1,
-						Linea = producto.linea,
-						Marca = producto.marca,
-						Fabricante = producto.fabricante,
-						Ubicacion = producto.ubicacion,
-						Unidad = string.IsNullOrWhiteSpace(producto.unidad) ? "PZA" : producto.unidad,
-						Bloqueado = producto.bloqueado,
-						ParaVenta = producto.paraventa,
-						Invent = producto.invent,
-						Granel = producto.granel,
-						Speso = producto.speso,
-						BajoCosto = producto.bajocosto,
-						Impuesto = producto.impuesto,
-						Existencia = producto.existencia,
-						Precio2 = producto.precio2,
-						Precio3 = producto.precio3,
-						Precio4 = producto.precio4,
-						Precio5 = producto.precio5,
-						Precio6 = producto.precio6,
-						Precio7 = producto.precio7,
-						Precio8 = producto.precio8,
-						Precio9 = producto.precio9,
-						Precio10 = producto.precio10,
-						U1 = producto.u1.ToString(),
-						U2 = producto.u2.ToString(),
-						U3 = producto.u3.ToString(),
-						U4 = producto.u4.ToString(),
-						U5 = producto.u5.ToString(),
-						U6 = producto.u6.ToString(),
-						U7 = producto.u7.ToString(),
-						U8 = producto.u8.ToString(),
-						U9 = producto.u9.ToString(),
-						U10 = producto.u10.ToString(),
-						C2 = producto.c2.ToString(),
-						C3 = producto.c3.ToString(),
-						C4 = producto.c4.ToString(),
-						C5 = producto.c5.ToString(),
-						C6 = producto.c6.ToString(),
-						C7 = producto.c7.ToString(),
-						C8 = producto.c8.ToString(),
-						C9 = producto.c9.ToString(),
-						C10 = producto.c10.ToString(),
-						CostoUltimo = producto.costoultimo,
-						ClaveProdServ = string.IsNullOrWhiteSpace(producto.claveprodserv) ? "01010101" : producto.claveprodserv,
-						ClaveUnidad = string.IsNullOrWhiteSpace(producto.claveunidad) ? "H87" : producto.claveunidad
+						Clave = productoNoNull.articulo,
+						Descripcion = productoNoNull.descripcion,
+						Precio = productoNoNull.precio1,
+						Linea = productoNoNull.linea,
+						Marca = productoNoNull.marca,
+						Fabricante = productoNoNull.fabricante,
+						Ubicacion = productoNoNull.ubicacion,
+						Unidad = string.IsNullOrWhiteSpace(productoNoNull.unidad) ? "PZA" : productoNoNull.unidad,
+						Bloqueado = productoNoNull.bloqueado,
+						ParaVenta = productoNoNull.paraventa,
+						Invent = productoNoNull.invent,
+						Granel = productoNoNull.granel,
+						Speso = productoNoNull.speso,
+						BajoCosto = productoNoNull.bajocosto,
+						Impuesto = productoNoNull.impuesto,
+						Existencia = productoNoNull.existencia,
+						Precio2 = productoNoNull.precio2,
+						Precio3 = productoNoNull.precio3,
+						Precio4 = productoNoNull.precio4,
+						Precio5 = productoNoNull.precio5,
+						Precio6 = productoNoNull.precio6,
+						Precio7 = productoNoNull.precio7,
+						Precio8 = productoNoNull.precio8,
+						Precio9 = productoNoNull.precio9,
+						Precio10 = productoNoNull.precio10,
+						U1 = productoNoNull.u1.ToString(),
+						U2 = productoNoNull.u2.ToString(),
+						U3 = productoNoNull.u3.ToString(),
+						U4 = productoNoNull.u4.ToString(),
+						U5 = productoNoNull.u5.ToString(),
+						U6 = productoNoNull.u6.ToString(),
+						U7 = productoNoNull.u7.ToString(),
+						U8 = productoNoNull.u8.ToString(),
+						U9 = productoNoNull.u9.ToString(),
+						U10 = productoNoNull.u10.ToString(),
+						C2 = productoNoNull.c2.ToString(),
+						C3 = productoNoNull.c3.ToString(),
+						C4 = productoNoNull.c4.ToString(),
+						C5 = productoNoNull.c5.ToString(),
+						C6 = productoNoNull.c6.ToString(),
+						C7 = productoNoNull.c7.ToString(),
+						C8 = productoNoNull.c8.ToString(),
+						C9 = productoNoNull.c9.ToString(),
+						C10 = productoNoNull.c10.ToString(),
+						CostoUltimo = productoNoNull.costoultimo,
+						ClaveProdServ = string.IsNullOrWhiteSpace(productoNoNull.claveprodserv) ? "01010101" : productoNoNull.claveprodserv,
+						ClaveUnidad = string.IsNullOrWhiteSpace(productoNoNull.claveunidad) ? "H87" : productoNoNull.claveunidad
 					};
 					var content = new StringContent(JsonSerializer.Serialize(upload), Encoding.UTF8, "application/json");
 					var getResp = await _httpClient.GetAsync($"/api/productos/{Uri.EscapeDataString(producto.articulo)}");
@@ -192,10 +215,11 @@ namespace SincronizadorCore.Services
 						if (!postResp.IsSuccessStatusCode)
 						{
 							LogService.WriteLog(_settings.LogDirectory, $"[DEBUG] JSON enviado para {producto.articulo}: {JsonSerializer.Serialize(upload)}");
-							// Si el error es 422, no reintentar ni marcar como exportado
+							// Si el error es 422, marcar como exportado y continuar
 							if ((int)postResp.StatusCode == 422)
 							{
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - No se puede procesar, no se marcará como exportado ni se reintentará en este ciclo.");
+								SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.ConnectionStrings);
+								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.");
 								continue;
 							}
 						}
