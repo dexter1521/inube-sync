@@ -22,7 +22,7 @@ namespace SincronizadorConfigUIv8
 						{
 							Default = "Information",
 							Microsoft = "Warning",
-							MicrosoftHostingLifetime = "Information" // Nombre válido
+							MicrosoftHostingLifetime = "Information"
 						}
 					},
 					AppSettings = new AppSettings
@@ -30,9 +30,9 @@ namespace SincronizadorConfigUIv8
 						IntervaloMinutos = 15,
 						ApiUrl = "https://miapi.com/api",
 						ApiUser = "usuario",
-						ApiPassword = "password",
-						LogDirectory = "Logs",
-						ConnectionStrings = "Server=.;Database=MiDB;Trusted_Connection=True;",
+						DeviceToken = "password",
+						LogsPath = "Logs",
+						SqlServer = "Server=.;Database=MiDB;Trusted_Connection=True;",
 						ApiToken = "123456"
 					}
 				};

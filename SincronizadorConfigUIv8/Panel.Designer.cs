@@ -28,314 +28,405 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.components = new System.ComponentModel.Container();
-			this.chkBoxProductos = new System.Windows.Forms.CheckBox();
-			this.BtnAceptar = new System.Windows.Forms.Button();
-			this.Timer1 = new System.Windows.Forms.Timer(this.components);
-			this.txtTiempo = new System.Windows.Forms.TextBox();
-			this.txtSucursal = new System.Windows.Forms.TextBox();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.btnRemoto = new System.Windows.Forms.Button();
-			this.btnLocal = new System.Windows.Forms.Button();
-			this.BtnEditar = new System.Windows.Forms.Button();
-			this.label2 = new System.Windows.Forms.Label();
-			this.label1 = new System.Windows.Forms.Label();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
-			this.chkBoxVentas = new System.Windows.Forms.CheckBox();
-			this.chkBoxCortes = new System.Windows.Forms.CheckBox();
-			this.tabControl1 = new System.Windows.Forms.TabControl();
-			this.tabPage1 = new System.Windows.Forms.TabPage();
-			this.dataGridView1 = new System.Windows.Forms.DataGridView();
-			this.tabPage2 = new System.Windows.Forms.TabPage();
-			this.logDataGridView = new System.Windows.Forms.DataGridView();
-			this.progressBar1 = new System.Windows.Forms.ProgressBar();
-			this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-			this.groupBox1.SuspendLayout();
-			this.groupBox2.SuspendLayout();
-			this.groupBox3.SuspendLayout();
-			this.tabControl1.SuspendLayout();
-			this.tabPage1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-			this.tabPage2.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.logDataGridView)).BeginInit();
-			this.SuspendLayout();
+			components = new System.ComponentModel.Container();
+			chkBoxProductos = new CheckBox();
+			Timer1 = new System.Windows.Forms.Timer(components);
+			groupBox1 = new GroupBox();
+			btnGuardar = new Button();
+			btnCargar = new Button();
+			txtLogsPath = new TextBox();
+			txtConnectionString = new TextBox();
+			nudIntervalo = new NumericUpDown();
+			label6 = new Label();
+			label5 = new Label();
+			label4 = new Label();
+			label3 = new Label();
+			txtDeviceToken = new TextBox();
+			txtApiUser = new TextBox();
+			label2 = new Label();
+			label1 = new Label();
+			txtApiUrl = new TextBox();
+			btnDetener = new Button();
+			btnIniciar = new Button();
+			lblEstado = new Label();
+			groupBox2 = new GroupBox();
+			groupBox3 = new GroupBox();
+			chkBoxVentas = new CheckBox();
+			chkBoxCortes = new CheckBox();
+			tabControl1 = new TabControl();
+			tabPage1 = new TabPage();
+			dataGridView1 = new DataGridView();
+			tabPage2 = new TabPage();
+			logDataGridView = new DataGridView();
+			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+			progressBar1 = new ProgressBar();
+			groupBox1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)nudIntervalo).BeginInit();
+			groupBox2.SuspendLayout();
+			groupBox3.SuspendLayout();
+			tabControl1.SuspendLayout();
+			tabPage1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+			tabPage2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)logDataGridView).BeginInit();
+			SuspendLayout();
 			// 
 			// chkBoxProductos
 			// 
-			this.chkBoxProductos.AutoSize = true;
-			this.chkBoxProductos.Location = new System.Drawing.Point(9, 21);
-			this.chkBoxProductos.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.chkBoxProductos.Name = "chkBoxProductos";
-			this.chkBoxProductos.Size = new System.Drawing.Size(101, 21);
-			this.chkBoxProductos.TabIndex = 1;
-			this.chkBoxProductos.Text = "Productos";
-			this.chkBoxProductos.UseVisualStyleBackColor = true;
-			// 
-			// BtnAceptar
-			// 
-			this.BtnAceptar.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.BtnAceptar.Location = new System.Drawing.Point(631, 54);
-			this.BtnAceptar.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.BtnAceptar.Name = "BtnAceptar";
-			this.BtnAceptar.Size = new System.Drawing.Size(104, 34);
-			this.BtnAceptar.TabIndex = 2;
-			this.BtnAceptar.Text = "Sincronizar";
-			this.BtnAceptar.UseVisualStyleBackColor = true;
-			this.BtnAceptar.Click += new System.EventHandler(this.BtnAceptar_Click);
+			chkBoxProductos.AutoSize = true;
+			chkBoxProductos.Location = new Point(8, 20);
+			chkBoxProductos.Margin = new Padding(3, 2, 3, 2);
+			chkBoxProductos.Name = "chkBoxProductos";
+			chkBoxProductos.Size = new Size(83, 17);
+			chkBoxProductos.TabIndex = 1;
+			chkBoxProductos.Text = "Productos";
+			chkBoxProductos.UseVisualStyleBackColor = true;
 			// 
 			// Timer1
 			// 
-			this.Timer1.Tick += new System.EventHandler(this.Timer1_Tick);
-			// 
-			// txtTiempo
-			// 
-			this.txtTiempo.Enabled = false;
-			this.txtTiempo.Location = new System.Drawing.Point(131, 39);
-			this.txtTiempo.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.txtTiempo.MaxLength = 3;
-			this.txtTiempo.Name = "txtTiempo";
-			this.txtTiempo.Size = new System.Drawing.Size(145, 23);
-			this.txtTiempo.TabIndex = 6;
-			this.txtTiempo.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-			// 
-			// txtSucursal
-			// 
-			this.txtSucursal.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-			this.txtSucursal.Enabled = false;
-			this.txtSucursal.Location = new System.Drawing.Point(131, 78);
-			this.txtSucursal.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.txtSucursal.MaxLength = 30;
-			this.txtSucursal.Name = "txtSucursal";
-			this.txtSucursal.Size = new System.Drawing.Size(145, 23);
-			this.txtSucursal.TabIndex = 8;
+			Timer1.Tick += Timer1_Tick;
 			// 
 			// groupBox1
 			// 
-			this.groupBox1.Controls.Add(this.btnRemoto);
-			this.groupBox1.Controls.Add(this.btnLocal);
-			this.groupBox1.Controls.Add(this.BtnEditar);
-			this.groupBox1.Controls.Add(this.txtSucursal);
-			this.groupBox1.Controls.Add(this.label2);
-			this.groupBox1.Controls.Add(this.label1);
-			this.groupBox1.Controls.Add(this.BtnAceptar);
-			this.groupBox1.Controls.Add(this.txtTiempo);
-			this.groupBox1.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.groupBox1.Location = new System.Drawing.Point(12, 6);
-			this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.groupBox1.Size = new System.Drawing.Size(893, 139);
-			this.groupBox1.TabIndex = 10;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "Datos Generales";
+			groupBox1.Controls.Add(btnGuardar);
+			groupBox1.Controls.Add(btnCargar);
+			groupBox1.Controls.Add(txtLogsPath);
+			groupBox1.Controls.Add(txtConnectionString);
+			groupBox1.Controls.Add(nudIntervalo);
+			groupBox1.Controls.Add(label6);
+			groupBox1.Controls.Add(label5);
+			groupBox1.Controls.Add(label4);
+			groupBox1.Controls.Add(label3);
+			groupBox1.Controls.Add(txtDeviceToken);
+			groupBox1.Controls.Add(txtApiUser);
+			groupBox1.Controls.Add(label2);
+			groupBox1.Controls.Add(label1);
+			groupBox1.Controls.Add(txtApiUrl);
+			groupBox1.Controls.Add(btnDetener);
+			groupBox1.Controls.Add(btnIniciar);
+			groupBox1.Controls.Add(lblEstado);
+			groupBox1.Font = new Font("Tahoma", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			groupBox1.Location = new Point(10, 6);
+			groupBox1.Margin = new Padding(3, 2, 3, 2);
+			groupBox1.Name = "groupBox1";
+			groupBox1.Padding = new Padding(3, 2, 3, 2);
+			groupBox1.Size = new Size(781, 130);
+			groupBox1.TabIndex = 10;
+			groupBox1.TabStop = false;
+			groupBox1.Text = "Datos Generales";
 			// 
-			// btnRemoto
+			// btnGuardar
 			// 
-			this.btnRemoto.Font = new System.Drawing.Font("Tahoma", 7.5F, System.Drawing.FontStyle.Bold);
-			this.btnRemoto.Location = new System.Drawing.Point(741, 54);
-			this.btnRemoto.Name = "btnRemoto";
-			this.btnRemoto.Size = new System.Drawing.Size(114, 34);
-			this.btnRemoto.TabIndex = 15;
-			this.btnRemoto.Text = "Test Remoto";
-			this.btnRemoto.UseVisualStyleBackColor = true;
-			this.btnRemoto.Click += new System.EventHandler(this.button2_Click);
+			btnGuardar.Location = new Point(509, 89);
+			btnGuardar.Margin = new Padding(4);
+			btnGuardar.Name = "btnGuardar";
+			btnGuardar.Size = new Size(88, 26);
+			btnGuardar.TabIndex = 29;
+			btnGuardar.Text = "Guardar";
+			btnGuardar.UseVisualStyleBackColor = true;
+			btnGuardar.Click += btnGuardar_Click;
 			// 
-			// btnLocal
+			// btnCargar
 			// 
-			this.btnLocal.Location = new System.Drawing.Point(740, 19);
-			this.btnLocal.Name = "btnLocal";
-			this.btnLocal.Size = new System.Drawing.Size(115, 31);
-			this.btnLocal.TabIndex = 14;
-			this.btnLocal.Text = "Test Local";
-			this.btnLocal.UseVisualStyleBackColor = true;
-			this.btnLocal.Click += new System.EventHandler(this.button1_Click);
+			btnCargar.Location = new Point(421, 89);
+			btnCargar.Margin = new Padding(4);
+			btnCargar.Name = "btnCargar";
+			btnCargar.Size = new Size(88, 26);
+			btnCargar.TabIndex = 28;
+			btnCargar.Text = "Cargar";
+			btnCargar.UseVisualStyleBackColor = true;
+			btnCargar.Click += btnCargar_Click;
 			// 
-			// BtnEditar
+			// txtLogsPath
 			// 
-			this.BtnEditar.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.BtnEditar.Location = new System.Drawing.Point(631, 19);
-			this.BtnEditar.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.BtnEditar.Name = "BtnEditar";
-			this.BtnEditar.Size = new System.Drawing.Size(103, 31);
-			this.BtnEditar.TabIndex = 13;
-			this.BtnEditar.Text = "Editar";
-			this.BtnEditar.UseVisualStyleBackColor = true;
-			this.BtnEditar.Click += new System.EventHandler(this.BtnEditar_Click);
+			txtLogsPath.Location = new Point(421, 16);
+			txtLogsPath.Margin = new Padding(4);
+			txtLogsPath.Name = "txtLogsPath";
+			txtLogsPath.Size = new Size(176, 20);
+			txtLogsPath.TabIndex = 27;
+			// 
+			// txtConnectionString
+			// 
+			txtConnectionString.Location = new Point(421, 38);
+			txtConnectionString.Margin = new Padding(4);
+			txtConnectionString.Name = "txtConnectionString";
+			txtConnectionString.Size = new Size(176, 20);
+			txtConnectionString.TabIndex = 26;
+			// 
+			// nudIntervalo
+			// 
+			nudIntervalo.Location = new Point(421, 61);
+			nudIntervalo.Margin = new Padding(4);
+			nudIntervalo.Name = "nudIntervalo";
+			nudIntervalo.Size = new Size(176, 20);
+			nudIntervalo.TabIndex = 25;
+			nudIntervalo.TextAlign = HorizontalAlignment.Right;
+			// 
+			// label6
+			// 
+			label6.AutoSize = true;
+			label6.Location = new Point(336, 61);
+			label6.Margin = new Padding(4, 0, 4, 0);
+			label6.Name = "label6";
+			label6.Size = new Size(77, 13);
+			label6.TabIndex = 24;
+			label6.Text = "Tiem de Act.";
+			// 
+			// label5
+			// 
+			label5.AutoSize = true;
+			label5.Location = new Point(336, 41);
+			label5.Margin = new Padding(4, 0, 4, 0);
+			label5.Name = "label5";
+			label5.Size = new Size(59, 13);
+			label5.TabIndex = 23;
+			label5.Text = "Conexión";
+			// 
+			// label4
+			// 
+			label4.AutoSize = true;
+			label4.Location = new Point(336, 19);
+			label4.Margin = new Padding(4, 0, 4, 0);
+			label4.Name = "label4";
+			label4.Size = new Size(55, 13);
+			label4.TabIndex = 22;
+			label4.Text = "Dir. Logs";
+			// 
+			// label3
+			// 
+			label3.AutoSize = true;
+			label3.Location = new Point(8, 61);
+			label3.Margin = new Padding(4, 0, 4, 0);
+			label3.Name = "label3";
+			label3.Size = new Size(61, 13);
+			label3.TabIndex = 21;
+			label3.Text = "Password";
+			// 
+			// txtDeviceToken
+			// 
+			txtDeviceToken.Location = new Point(77, 58);
+			txtDeviceToken.Margin = new Padding(4);
+			txtDeviceToken.MaxLength = 255;
+			txtDeviceToken.Multiline = true;
+			txtDeviceToken.Name = "txtDeviceToken";
+			txtDeviceToken.Size = new Size(251, 53);
+			txtDeviceToken.TabIndex = 20;
+			// 
+			// txtApiUser
+			// 
+			txtApiUser.Location = new Point(77, 34);
+			txtApiUser.Margin = new Padding(4);
+			txtApiUser.Name = "txtApiUser";
+			txtApiUser.Size = new Size(251, 20);
+			txtApiUser.TabIndex = 19;
 			// 
 			// label2
 			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(5, 39);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(106, 17);
-			this.label2.TabIndex = 11;
-			this.label2.Text = "Sincronización";
+			label2.AutoSize = true;
+			label2.Location = new Point(8, 41);
+			label2.Margin = new Padding(4, 0, 4, 0);
+			label2.Name = "label2";
+			label2.Size = new Size(50, 13);
+			label2.TabIndex = 18;
+			label2.Text = "Usuario";
 			// 
 			// label1
 			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(5, 81);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(66, 17);
-			this.label1.TabIndex = 0;
-			this.label1.Text = "Sucursal";
+			label1.AutoSize = true;
+			label1.Location = new Point(8, 19);
+			label1.Margin = new Padding(4, 0, 4, 0);
+			label1.Name = "label1";
+			label1.Size = new Size(52, 13);
+			label1.TabIndex = 17;
+			label1.Text = "URL API";
+			// 
+			// txtApiUrl
+			// 
+			txtApiUrl.Location = new Point(77, 12);
+			txtApiUrl.Margin = new Padding(4);
+			txtApiUrl.Name = "txtApiUrl";
+			txtApiUrl.Size = new Size(251, 20);
+			txtApiUrl.TabIndex = 16;
+			// 
+			// btnDetener
+			// 
+			btnDetener.Font = new Font("Tahoma", 7.5F, FontStyle.Bold);
+			btnDetener.Location = new Point(675, 80);
+			btnDetener.Name = "btnDetener";
+			btnDetener.Size = new Size(100, 32);
+			btnDetener.TabIndex = 15;
+			btnDetener.Text = "Detener Servicio";
+			btnDetener.UseVisualStyleBackColor = true;
+			// 
+			// btnIniciar
+			// 
+			btnIniciar.Location = new Point(674, 45);
+			btnIniciar.Name = "btnIniciar";
+			btnIniciar.Size = new Size(101, 29);
+			btnIniciar.TabIndex = 14;
+			btnIniciar.Text = "Iniciar Servicio";
+			btnIniciar.UseVisualStyleBackColor = true;
+			// 
+			// lblEstado
+			// 
+			lblEstado.AutoSize = true;
+			lblEstado.Location = new Point(651, 16);
+			lblEstado.Name = "lblEstado";
+			lblEstado.Size = new Size(28, 13);
+			lblEstado.TabIndex = 11;
+			lblEstado.Text = "..:::..";
 			// 
 			// groupBox2
 			// 
-			this.groupBox2.Controls.Add(this.chkBoxProductos);
-			this.groupBox2.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.groupBox2.Location = new System.Drawing.Point(12, 149);
-			this.groupBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.groupBox2.Size = new System.Drawing.Size(480, 100);
-			this.groupBox2.TabIndex = 12;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Descargar Datos";
+			groupBox2.Controls.Add(chkBoxProductos);
+			groupBox2.Font = new Font("Tahoma", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			groupBox2.Location = new Point(10, 140);
+			groupBox2.Margin = new Padding(3, 2, 3, 2);
+			groupBox2.Name = "groupBox2";
+			groupBox2.Padding = new Padding(3, 2, 3, 2);
+			groupBox2.Size = new Size(420, 94);
+			groupBox2.TabIndex = 12;
+			groupBox2.TabStop = false;
+			groupBox2.Text = "Descargar Datos";
 			// 
 			// groupBox3
 			// 
-			this.groupBox3.Controls.Add(this.chkBoxVentas);
-			this.groupBox3.Controls.Add(this.chkBoxCortes);
-			this.groupBox3.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.groupBox3.Location = new System.Drawing.Point(499, 149);
-			this.groupBox3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.groupBox3.Size = new System.Drawing.Size(405, 100);
-			this.groupBox3.TabIndex = 13;
-			this.groupBox3.TabStop = false;
-			this.groupBox3.Text = "Cargar Datos";
+			groupBox3.Controls.Add(chkBoxVentas);
+			groupBox3.Controls.Add(chkBoxCortes);
+			groupBox3.Font = new Font("Tahoma", 7.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			groupBox3.Location = new Point(437, 140);
+			groupBox3.Margin = new Padding(3, 2, 3, 2);
+			groupBox3.Name = "groupBox3";
+			groupBox3.Padding = new Padding(3, 2, 3, 2);
+			groupBox3.Size = new Size(354, 94);
+			groupBox3.TabIndex = 13;
+			groupBox3.TabStop = false;
+			groupBox3.Text = "Cargar Datos";
 			// 
 			// chkBoxVentas
 			// 
-			this.chkBoxVentas.AutoSize = true;
-			this.chkBoxVentas.Location = new System.Drawing.Point(5, 21);
-			this.chkBoxVentas.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.chkBoxVentas.Name = "chkBoxVentas";
-			this.chkBoxVentas.Size = new System.Drawing.Size(78, 21);
-			this.chkBoxVentas.TabIndex = 3;
-			this.chkBoxVentas.Text = "Ventas";
-			this.chkBoxVentas.UseVisualStyleBackColor = true;
+			chkBoxVentas.AutoSize = true;
+			chkBoxVentas.Location = new Point(4, 20);
+			chkBoxVentas.Margin = new Padding(3, 2, 3, 2);
+			chkBoxVentas.Name = "chkBoxVentas";
+			chkBoxVentas.Size = new Size(65, 17);
+			chkBoxVentas.TabIndex = 3;
+			chkBoxVentas.Text = "Ventas";
+			chkBoxVentas.UseVisualStyleBackColor = true;
 			// 
 			// chkBoxCortes
 			// 
-			this.chkBoxCortes.AutoSize = true;
-			this.chkBoxCortes.Location = new System.Drawing.Point(5, 46);
-			this.chkBoxCortes.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.chkBoxCortes.Name = "chkBoxCortes";
-			this.chkBoxCortes.Size = new System.Drawing.Size(76, 21);
-			this.chkBoxCortes.TabIndex = 4;
-			this.chkBoxCortes.Text = "Cortes";
-			this.chkBoxCortes.UseVisualStyleBackColor = true;
+			chkBoxCortes.AutoSize = true;
+			chkBoxCortes.Location = new Point(4, 43);
+			chkBoxCortes.Margin = new Padding(3, 2, 3, 2);
+			chkBoxCortes.Name = "chkBoxCortes";
+			chkBoxCortes.Size = new Size(63, 17);
+			chkBoxCortes.TabIndex = 4;
+			chkBoxCortes.Text = "Cortes";
+			chkBoxCortes.UseVisualStyleBackColor = true;
 			// 
 			// tabControl1
 			// 
-			this.tabControl1.Controls.Add(this.tabPage1);
-			this.tabControl1.Controls.Add(this.tabPage2);
-			this.tabControl1.Location = new System.Drawing.Point(12, 254);
-			this.tabControl1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabControl1.Name = "tabControl1";
-			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(900, 404);
-			this.tabControl1.TabIndex = 14;
+			tabControl1.Controls.Add(tabPage1);
+			tabControl1.Controls.Add(tabPage2);
+			tabControl1.Location = new Point(10, 238);
+			tabControl1.Margin = new Padding(3, 2, 3, 2);
+			tabControl1.Name = "tabControl1";
+			tabControl1.SelectedIndex = 0;
+			tabControl1.Size = new Size(788, 379);
+			tabControl1.TabIndex = 14;
 			// 
 			// tabPage1
 			// 
-			this.tabPage1.Controls.Add(this.dataGridView1);
-			this.tabPage1.Location = new System.Drawing.Point(4, 25);
-			this.tabPage1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabPage1.Name = "tabPage1";
-			this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabPage1.Size = new System.Drawing.Size(892, 375);
-			this.tabPage1.TabIndex = 0;
-			this.tabPage1.Text = "Tareas";
-			this.tabPage1.UseVisualStyleBackColor = true;
+			tabPage1.Controls.Add(dataGridView1);
+			tabPage1.Location = new Point(4, 24);
+			tabPage1.Margin = new Padding(3, 2, 3, 2);
+			tabPage1.Name = "tabPage1";
+			tabPage1.Padding = new Padding(3, 2, 3, 2);
+			tabPage1.Size = new Size(780, 351);
+			tabPage1.TabIndex = 0;
+			tabPage1.Text = "Tareas";
+			tabPage1.UseVisualStyleBackColor = true;
 			// 
 			// dataGridView1
 			// 
-			this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.dataGridView1.Location = new System.Drawing.Point(3, 2);
-			this.dataGridView1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.dataGridView1.Name = "dataGridView1";
-			this.dataGridView1.RowHeadersWidth = 51;
-			this.dataGridView1.RowTemplate.Height = 24;
-			this.dataGridView1.Size = new System.Drawing.Size(885, 370);
-			this.dataGridView1.TabIndex = 12;
+			dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			dataGridView1.Location = new Point(3, 2);
+			dataGridView1.Margin = new Padding(3, 2, 3, 2);
+			dataGridView1.Name = "dataGridView1";
+			dataGridView1.RowHeadersWidth = 51;
+			dataGridView1.RowTemplate.Height = 24;
+			dataGridView1.Size = new Size(774, 347);
+			dataGridView1.TabIndex = 12;
 			// 
 			// tabPage2
 			// 
-			this.tabPage2.Controls.Add(this.logDataGridView);
-			this.tabPage2.Location = new System.Drawing.Point(4, 25);
-			this.tabPage2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabPage2.Name = "tabPage2";
-			this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.tabPage2.Size = new System.Drawing.Size(892, 375);
-			this.tabPage2.TabIndex = 1;
-			this.tabPage2.Text = "Mensajes";
-			this.tabPage2.UseVisualStyleBackColor = true;
+			tabPage2.Controls.Add(logDataGridView);
+			tabPage2.Location = new Point(4, 24);
+			tabPage2.Margin = new Padding(3, 2, 3, 2);
+			tabPage2.Name = "tabPage2";
+			tabPage2.Padding = new Padding(3, 2, 3, 2);
+			tabPage2.Size = new Size(780, 351);
+			tabPage2.TabIndex = 1;
+			tabPage2.Text = "Mensajes";
+			tabPage2.UseVisualStyleBackColor = true;
 			// 
 			// logDataGridView
 			// 
-			this.logDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.logDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.logDataGridView.Location = new System.Drawing.Point(3, 2);
-			this.logDataGridView.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.logDataGridView.Name = "logDataGridView";
-			this.logDataGridView.RowHeadersWidth = 51;
-			this.logDataGridView.RowTemplate.Height = 24;
-			this.logDataGridView.Size = new System.Drawing.Size(886, 371);
-			this.logDataGridView.TabIndex = 0;
+			logDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			logDataGridView.Dock = DockStyle.Fill;
+			logDataGridView.Location = new Point(3, 2);
+			logDataGridView.Margin = new Padding(3, 2, 3, 2);
+			logDataGridView.Name = "logDataGridView";
+			logDataGridView.RowHeadersWidth = 51;
+			logDataGridView.RowTemplate.Height = 24;
+			logDataGridView.Size = new Size(774, 347);
+			logDataGridView.TabIndex = 0;
 			// 
 			// progressBar1
 			// 
-			this.progressBar1.Location = new System.Drawing.Point(21, 663);
-			this.progressBar1.Margin = new System.Windows.Forms.Padding(4);
-			this.progressBar1.Name = "progressBar1";
-			this.progressBar1.Size = new System.Drawing.Size(885, 28);
-			this.progressBar1.TabIndex = 15;
+			progressBar1.Location = new Point(18, 622);
+			progressBar1.Margin = new Padding(4);
+			progressBar1.Name = "progressBar1";
+			progressBar1.Size = new Size(774, 26);
+			progressBar1.TabIndex = 15;
 			// 
-			// Form1
+			// Panel
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(925, 713);
-			this.Controls.Add(this.progressBar1);
-			this.Controls.Add(this.tabControl1);
-			this.Controls.Add(this.groupBox3);
-			this.Controls.Add(this.groupBox2);
-			this.Controls.Add(this.groupBox1);
-			this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-			this.MaximizeBox = false;
-			this.Name = "Panel";
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "Sincroniador";
-			this.groupBox1.ResumeLayout(false);
-			this.groupBox1.PerformLayout();
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox2.PerformLayout();
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
-			this.tabControl1.ResumeLayout(false);
-			this.tabPage1.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-			this.tabPage2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.logDataGridView)).EndInit();
-			this.ResumeLayout(false);
-
+			AutoScaleDimensions = new SizeF(7F, 15F);
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size(809, 668);
+			Controls.Add(progressBar1);
+			Controls.Add(tabControl1);
+			Controls.Add(groupBox3);
+			Controls.Add(groupBox2);
+			Controls.Add(groupBox1);
+			Margin = new Padding(3, 2, 3, 2);
+			MaximizeBox = false;
+			Name = "Panel";
+			StartPosition = FormStartPosition.CenterScreen;
+			Text = "Sincroniador";
+			groupBox1.ResumeLayout(false);
+			groupBox1.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)nudIntervalo).EndInit();
+			groupBox2.ResumeLayout(false);
+			groupBox2.PerformLayout();
+			groupBox3.ResumeLayout(false);
+			groupBox3.PerformLayout();
+			tabControl1.ResumeLayout(false);
+			tabPage1.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+			tabPage2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)logDataGridView).EndInit();
+			ResumeLayout(false);
 		}
 
 		#endregion
 
 		private System.Windows.Forms.CheckBox chkBoxProductos;
-		private System.Windows.Forms.Button BtnAceptar;
 		private System.Windows.Forms.Timer Timer1;
-		private System.Windows.Forms.TextBox txtTiempo;
-		private System.Windows.Forms.TextBox txtSucursal;
 		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.Label lblEstado;
 		private System.Windows.Forms.GroupBox groupBox2;
 		private System.Windows.Forms.GroupBox groupBox3;
 		private System.Windows.Forms.CheckBox chkBoxVentas;
@@ -343,12 +434,25 @@
 		private System.Windows.Forms.TabControl tabControl1;
 		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.DataGridView logDataGridView;
-		private System.Windows.Forms.ProgressBar progressBar1;
-		private System.Windows.Forms.Button BtnEditar;
 		private System.Windows.Forms.TabPage tabPage1;
 		private System.Windows.Forms.DataGridView dataGridView1;
-		private System.Windows.Forms.Button btnLocal;
+		private System.Windows.Forms.Button btnIniciar;
 		private System.ComponentModel.BackgroundWorker backgroundWorker1;
-		private System.Windows.Forms.Button btnRemoto;
+		private System.Windows.Forms.Button btnDetener;
+		private ProgressBar progressBar1;
+		private TextBox txtApiUrl;
+		private Label label1;
+		private Label label2;
+		private TextBox txtApiUser;
+		private TextBox txtDeviceToken;
+		private Label label3;
+		private Label label4;
+		private Label label5;
+		private Label label6;
+		private NumericUpDown nudIntervalo;
+		private TextBox txtConnectionString;
+		private TextBox txtLogsPath;
+		private Button btnCargar;
+		private Button btnGuardar;
 	}
 }
