@@ -1,3 +1,7 @@
+using SincronizadorCore.Models;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Contrib.WaitAndRetry;
 using SincronizadorWorker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -56,6 +60,36 @@ IHost host = Host.CreateDefaultBuilder(args)
 	{
 		// Registrar los valores de AppSettings para inyecci�n por IOptions<AppSettings>
 		services.Configure<AppSettings>(hostContext.Configuration.GetSection("AppSettings"));
+
+		// Registrar el handler de autenticación
+		services.AddTransient<SincronizadorCore.Handlers.AuthHeaderHandler>();
+
+		// Registrar HttpClient con el handler y la BaseAddress para el cliente 'api'
+		services.AddHttpClient("api", (sp, client) =>
+		{
+			var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSettings>>().Value;
+			var apiUrl = settings.ApiUrl?.TrimEnd('/');
+			if (!string.IsNullOrWhiteSpace(apiUrl))
+				client.BaseAddress = new Uri(apiUrl);
+			client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds > 0 ? settings.TimeoutSeconds : 30);
+		})
+		.AddHttpMessageHandler<SincronizadorCore.Handlers.AuthHeaderHandler>()
+		.AddPolicyHandler((sp, request) =>
+		{
+			// Solo aplicar la política a métodos idempotentes
+			if (request.Method == HttpMethod.Get || request.Method == HttpMethod.Put || request.Method.Method == "PATCH")
+			{
+				var delay = TimeSpan.FromSeconds(2);
+				var maxRetries = 5;
+				var jitter = Polly.Contrib.WaitAndRetry.Backoff.DecorrelatedJitterBackoffV2(delay, maxRetries);
+				return Polly.Extensions.Http.HttpPolicyExtensions
+					.HandleTransientHttpError()
+					.OrResult(r => (int)r.StatusCode == 429)
+					.WaitAndRetryAsync(jitter);
+			}
+			// Sin política para POST/DELETE
+			return Polly.Policy.NoOpAsync().AsAsyncPolicy<HttpResponseMessage>();
+		});
 
 		// Registrar el servicio del worker
 		services.AddHostedService<Worker>();

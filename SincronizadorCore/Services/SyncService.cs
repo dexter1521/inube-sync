@@ -70,9 +70,23 @@ namespace SincronizadorCore.Services
 				// Subir productos
 
 				// Obtener catálogos locales no exportados para referencia rápida
-				var lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.SqlServer);
-				var marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.SqlServer);
-				var impuestosLocales = SqlHelper.ObtenerTodosImpuestos(_settings.SqlServer);
+				if (string.IsNullOrWhiteSpace(_settings.SqlServer))
+				{
+					if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+					{
+						if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+						{
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								LogService.WriteLog(_settings.LogsPath, "[ERROR] La cadena de conexión SqlServer no está configurada.");
+							}
+						}
+					}
+					return;
+				}
+				var lineasNoExportadas = await SqlHelper.ObtenerLineasNoExportadasAsync(_settings.SqlServer);
+				var marcasNoExportadas = await SqlHelper.ObtenerMarcasNoExportadasAsync(_settings.SqlServer);
+				var impuestosLocales = await SqlHelper.ObtenerTodosImpuestosAsync(_settings.SqlServer);
 
 				// HashSets para evitar crear repetidamente
 				var lineasVerificadas = new HashSet<string>();
@@ -83,7 +97,21 @@ namespace SincronizadorCore.Services
 				List<ProductoModel> productosOrdenados = new List<ProductoModel>();
 				while (true)
 				{
-					var productos = SqlHelper.ObtenerTodosProductos(_settings.SqlServer);
+					if (string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+						{
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, "[ERROR] La cadena de conexión SqlServer no está configurada.");
+								}
+							}
+						}
+						break;
+					}
+					var productos = await SqlHelper.ObtenerTodosProductosAsync(_settings.SqlServer);
 					if (productos == null || productos.Count == 0)
 						break;
 					// Ordenar solo la primera vez para mantener el ciclo incremental
@@ -109,19 +137,41 @@ namespace SincronizadorCore.Services
 						var getLinea = await GetWithRetryAsync($"/api/lineas/{Uri.EscapeDataString(productoNoNull.linea)}");
 						if ((int)getLinea.StatusCode == 404)
 						{
-							lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.SqlServer);
+							if (string.IsNullOrWhiteSpace(_settings.SqlServer))
+							{
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, "[ERROR] La cadena de conexión SqlServer no está configurada.");
+								}
+								break;
+							}
+							lineasNoExportadas = await SqlHelper.ObtenerLineasNoExportadasAsync(_settings.SqlServer);
 							var lineaLocal = lineasNoExportadas.Find(l => l.Linea == productoNoNull.linea);
 							if (lineaLocal != null)
 							{
 								var lineaContent = new StringContent(JsonSerializer.Serialize(lineaLocal), Encoding.UTF8, "application/json");
 								var postLinea = await PostWithRetryAsync("/api/lineas", lineaContent);
-								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Línea auto-creada para producto {productoNoNull.articulo}: {productoNoNull.linea} - {postLinea.StatusCode}", requestId);
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Línea auto-creada para producto {productoNoNull.articulo}: {productoNoNull.linea} - {postLinea.StatusCode}", requestId);
+								}
 								if (postLinea.IsSuccessStatusCode)
 								{
-									SqlHelper.MarcarLineasComoExportadas(new List<string> { productoNoNull.linea }, _settings.SqlServer);
-									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Línea marcada como exportada: {productoNoNull.linea}", requestId);
+									if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+									{
+										await SqlHelper.MarcarLineasComoExportadasAsync(new List<string> { productoNoNull.linea }, _settings.SqlServer);
+									}
+									if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+									{
+										LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Línea marcada como exportada: {productoNoNull.linea}", requestId);
+									}
 									// Refrescar la lista después de marcar como exportada
-									lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.SqlServer);
+									if (string.IsNullOrWhiteSpace(_settings.SqlServer))
+									{
+										LogService.WriteLog(_settings.LogsPath, "[ERROR] La cadena de conexión SqlServer no está configurada.");
+										break;
+									}
+									lineasNoExportadas = await SqlHelper.ObtenerLineasNoExportadasAsync(_settings.SqlServer);
 								}
 							}
 						}
@@ -132,19 +182,41 @@ namespace SincronizadorCore.Services
 						var getMarca = await GetWithRetryAsync($"/api/marcas/{Uri.EscapeDataString(productoNoNull.marca)}");
 						if ((int)getMarca.StatusCode == 404)
 						{
-							marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.SqlServer);
+							if (string.IsNullOrWhiteSpace(_settings.SqlServer))
+							{
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, "[ERROR] La cadena de conexión SqlServer no está configurada.");
+								}
+								break;
+							}
+							marcasNoExportadas = await SqlHelper.ObtenerMarcasNoExportadasAsync(_settings.SqlServer);
 							var marcaLocal = marcasNoExportadas.Find(m => m.Marca == productoNoNull.marca);
 							if (marcaLocal != null)
 							{
 								var marcaContent = new StringContent(JsonSerializer.Serialize(marcaLocal), Encoding.UTF8, "application/json");
 								var postMarca = await PostWithRetryAsync("/api/marcas", marcaContent);
-								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Marca auto-creada para producto {productoNoNull.articulo}: {productoNoNull.marca} - {postMarca.StatusCode}", requestId);
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Marca auto-creada para producto {productoNoNull.articulo}: {productoNoNull.marca} - {postMarca.StatusCode}", requestId);
+								}
 								if (postMarca.IsSuccessStatusCode)
 								{
-									SqlHelper.MarcarMarcasComoExportadas(new List<string> { productoNoNull.marca }, _settings.SqlServer);
-									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Marca marcada como exportada: {productoNoNull.marca}", requestId);
+									if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+									{
+										await SqlHelper.MarcarMarcasComoExportadasAsync(new List<string> { productoNoNull.marca }, _settings.SqlServer);
+									}
+									if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+									{
+										LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Marca marcada como exportada: {productoNoNull.marca}", requestId);
+									}
 									// Refrescar la lista después de marcar como exportada
-									marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.SqlServer);
+									if (string.IsNullOrWhiteSpace(_settings.SqlServer))
+									{
+										LogService.WriteLog(_settings.LogsPath, "[ERROR] La cadena de conexión SqlServer no está configurada.");
+										break;
+									}
+									marcasNoExportadas = await SqlHelper.ObtenerMarcasNoExportadasAsync(_settings.SqlServer);
 								}
 							}
 						}
@@ -162,7 +234,10 @@ namespace SincronizadorCore.Services
 							{
 								var impuestoContent = new StringContent(JsonSerializer.Serialize(impuestoLocal), Encoding.UTF8, "application/json");
 								var postImpuesto = await PostWithRetryAsync("/api/impuestos", impuestoContent);
-								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Impuesto auto-creado para producto {productoNoNull.articulo}: {productoNoNull.impuesto} - {postImpuesto.StatusCode}", requestId);
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Impuesto auto-creado para producto {productoNoNull.articulo}: {productoNoNull.impuesto} - {postImpuesto.StatusCode}", requestId);
+								}
 							}
 						}
 						impuestosVerificados.Add(productoNoNull.impuesto);
@@ -227,11 +302,20 @@ namespace SincronizadorCore.Services
 						var putResp = await _httpClient.PutAsync($"/api/productos/{Uri.EscapeDataString(producto.articulo)}", content);
 						var putMsg = putResp.IsSuccessStatusCode ? "Actualizado" : "Error al actualizar";
 						var putError = putResp.IsSuccessStatusCode ? "" : $" | Error: {await putResp.Content.ReadAsStringAsync()}";
-						LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (PUT): {putResp.StatusCode} - {putMsg}{putError}", requestId);
+						if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+						{
+							LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (PUT): {putResp.StatusCode} - {putMsg}{putError}", requestId);
+						}
 						if (putResp.IsSuccessStatusCode)
 						{
-							SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.SqlServer);
-							LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
+							if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+							{
+								await SqlHelper.MarcarProductosComoExportadosAsync(new List<string> { producto.articulo }, _settings.SqlServer);
+							}
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
+							}
 						}
 					}
 					else
@@ -242,30 +326,54 @@ namespace SincronizadorCore.Services
 						var postError = postResp.IsSuccessStatusCode ? "" : $" | Error: {await postResp.Content.ReadAsStringAsync()}";
 						if (!postResp.IsSuccessStatusCode)
 						{
-							LogService.WriteLog(_settings.LogsPath, $"[DEBUG] JSON enviado para {producto.articulo}: {JsonSerializer.Serialize(upload)}", requestId);
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								LogService.WriteLog(_settings.LogsPath, $"[DEBUG] JSON enviado para {producto.articulo}: {JsonSerializer.Serialize(upload)}", requestId);
+							}
 							// Si el error es 422, marcar como exportado y continuar
 							if ((int)postResp.StatusCode == 422)
 							{
-								SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.SqlServer);
-								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.", requestId);
+								if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+								{
+									await SqlHelper.MarcarProductosComoExportadosAsync(new List<string> { producto.articulo }, _settings.SqlServer);
+								}
+								if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+								{
+									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.", requestId);
+								}
 								continue;
 							}
 						}
-						LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (POST): {postResp.StatusCode} - {postMsg}{postError}", requestId);
+						if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+						{
+							LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (POST): {postResp.StatusCode} - {postMsg}{postError}", requestId);
+						}
 						if (postResp.IsSuccessStatusCode)
 						{
-							SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.SqlServer);
-							LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
+							if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+							{
+								await SqlHelper.MarcarProductosComoExportadosAsync(new List<string> { producto.articulo }, _settings.SqlServer);
+							}
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
+							}
 						}
 					}
 				}
 
 
-				LogService.WriteLog(_settings.LogsPath, "[UPLOAD] Sincronización hacia la nube finalizada.", requestId);
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, "[UPLOAD] Sincronización hacia la nube finalizada.", requestId);
+				}
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Error al sincronizar hacia la nube: {ex.Message}", requestId);
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Error al sincronizar hacia la nube: {ex.Message}", requestId);
+				}
 			}
 		}
 
@@ -286,16 +394,25 @@ namespace SincronizadorCore.Services
 					productos = JsonSerializer.Deserialize<List<ProductoModel>>(json,
 						new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<ProductoModel>();
 
-					LogService.WriteLog(_settings.LogsPath, $"[API] Se obtuvieron {productos.Count} productos.");
+					if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+					{
+						LogService.WriteLog(_settings.LogsPath, $"[API] Se obtuvieron {productos.Count} productos.");
+					}
 				}
 				else
 				{
-					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener productos: {response.StatusCode}");
+					if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+					{
+						LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener productos: {response.StatusCode}");
+					}
 				}
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog(_settings.LogsPath, $"[API] Excepción: {ex.Message}");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Excepción: {ex.Message}");
+				}
 			}
 
 			return productos;
@@ -309,7 +426,10 @@ namespace SincronizadorCore.Services
 				var pendientesResponse = await _httpClient.GetAsync($"/api/prods_download/pendientes/{_settings.ApiUser}");
 				if (!pendientesResponse.IsSuccessStatusCode)
 				{
-					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener pendientes: {pendientesResponse.StatusCode}");
+					if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+					{
+						LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener pendientes: {pendientesResponse.StatusCode}");
+					}
 					return;
 				}
 
@@ -318,7 +438,10 @@ namespace SincronizadorCore.Services
 
 				if (pendientes.Count == 0)
 				{
-					LogService.WriteLog(_settings.LogsPath, "[SYNC] No hay productos pendientes para actualizar precios.");
+					if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+					{
+						LogService.WriteLog(_settings.LogsPath, "[SYNC] No hay productos pendientes para actualizar precios.");
+					}
 					return;
 				}
 
@@ -333,18 +456,30 @@ namespace SincronizadorCore.Services
 				{
 					// Validar y registrar/actualizar línea
 					var linea = new LineaModel { Linea = producto.linea ?? "SYS", Descrip = producto.linea ?? "" };
-					SqlHelper.InsertarOActualizarLinea(linea, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarLineaAsync(linea, _settings.SqlServer);
+					}
 
 					// Validar y registrar/actualizar marca
 					var marca = new MarcaModel { Marca = producto.marca ?? "SYS", Descrip = producto.marca ?? "" };
-					SqlHelper.InsertarOActualizarMarca(marca, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarMarcaAsync(marca, _settings.SqlServer);
+					}
 
 					// Validar y registrar/actualizar impuesto
 					var impuesto = new ImpuestoModel { Impuesto = producto.impuesto ?? "SYS", Valor = 0 };
-					SqlHelper.InsertarOActualizarImpuesto(impuesto, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarImpuestoAsync(impuesto, _settings.SqlServer);
+					}
 
 					// Actualizar producto
-					SqlHelper.InsertarOActualizarProducto(producto, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarProductoAsync(producto, _settings.SqlServer);
+					}
 
 					// Confirmar la actualización con el endpoint POST
 					var pendiente = pendientes.FirstOrDefault(p => p.Clave == producto.articulo);
@@ -354,20 +489,32 @@ namespace SincronizadorCore.Services
 						var confirmResponse = await _httpClient.PostAsync("/api/prods_download/aplicar", confirmContent);
 						if (confirmResponse.IsSuccessStatusCode)
 						{
-							LogService.WriteLog(_settings.LogsPath, $"[SYNC] Confirmado producto pendiente id={pendiente.Id} clave={pendiente.Clave}");
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								LogService.WriteLog(_settings.LogsPath, $"[SYNC] Confirmado producto pendiente id={pendiente.Id} clave={pendiente.Clave}");
+							}
 						}
 						else
 						{
-							LogService.WriteLog(_settings.LogsPath, $"[SYNC] Error al confirmar producto pendiente id={pendiente.Id} clave={pendiente.Clave}: {confirmResponse.StatusCode}");
+							if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+							{
+								LogService.WriteLog(_settings.LogsPath, $"[SYNC] Error al confirmar producto pendiente id={pendiente.Id} clave={pendiente.Clave}: {confirmResponse.StatusCode}");
+							}
 						}
 					}
 
-					LogService.WriteLog(_settings.LogsPath, $"[SYNC] Se actualizaron precios de {productosActualizar.Count} productos pendientes y se confirmó cada uno.");
+					if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+					{
+						LogService.WriteLog(_settings.LogsPath, $"[SYNC] Se actualizaron precios de {productosActualizar.Count} productos pendientes y se confirmó cada uno.");
+					}
 				}
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog(_settings.LogsPath, $"[SYNC] Error en sincronización de precios pendientes: {ex.Message}");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[SYNC] Error en sincronización de precios pendientes: {ex.Message}");
+				}
 			}
 		}
 		public async Task ConsultarDispositivosAsync()
@@ -378,8 +525,11 @@ namespace SincronizadorCore.Services
 			var response = await _httpClient.GetAsync("/api/dispositivos");
 			var result = await response.Content.ReadAsStringAsync();
 
-			LogService.WriteLog(_settings.LogsPath,
-				$"GET dispositivos: {(int)response.StatusCode} - {result}");
+			if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+			{
+				LogService.WriteLog(_settings.LogsPath,
+					$"GET dispositivos: {(int)response.StatusCode} - {result}");
+			}
 		}
 
 		public async Task SincronizarLineasDesdeApiAsync()
@@ -398,14 +548,23 @@ namespace SincronizadorCore.Services
 						Linea = linea.Linea ?? string.Empty,
 						Descrip = linea.Descrip ?? string.Empty
 					};
-					SqlHelper.InsertarOActualizarLinea(lineaLocal, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarLineaAsync(lineaLocal, _settings.SqlServer);
+					}
 					count++;
 				}
-				LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} líneas.");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} líneas.");
+				}
 			}
 			else
 			{
-				LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener líneas: {response.StatusCode}");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener líneas: {response.StatusCode}");
+				}
 			}
 		}
 
@@ -425,14 +584,23 @@ namespace SincronizadorCore.Services
 						Marca = marca.Marca ?? string.Empty,
 						Descrip = marca.Descrip ?? string.Empty
 					};
-					SqlHelper.InsertarOActualizarMarca(marcaLocal, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarMarcaAsync(marcaLocal, _settings.SqlServer);
+					}
 					count++;
 				}
-				LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} marcas.");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} marcas.");
+				}
 			}
 			else
 			{
-				LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener marcas: {response.StatusCode}");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener marcas: {response.StatusCode}");
+				}
 			}
 		}
 
@@ -452,14 +620,23 @@ namespace SincronizadorCore.Services
 						Impuesto = impuesto.Impuesto ?? string.Empty,
 						Valor = impuesto.Valor
 					};
-					SqlHelper.InsertarOActualizarImpuesto(impuestoLocal, _settings.SqlServer);
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarImpuestoAsync(impuestoLocal, _settings.SqlServer);
+					}
 					count++;
 				}
-				LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} impuestos.");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} impuestos.");
+				}
 			}
 			else
 			{
-				LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener impuestos: {response.StatusCode}");
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener impuestos: {response.StatusCode}");
+				}
 			}
 		}
 	}

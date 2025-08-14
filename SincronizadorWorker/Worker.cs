@@ -1,3 +1,4 @@
+using SincronizadorCore.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,15 +17,15 @@ namespace SincronizadorWorker
 	{
 
 		private readonly ILogger<Worker> _logger;
-		private readonly AppSettings _settings;
-		private readonly SyncService _syncService;
+		private readonly IOptions<AppSettings> _settings;
+		private SyncService _syncService;
 		private Timer? _timer;
 
-		public Worker(ILogger<Worker> logger, IOptions<AppSettings> options)
+		public Worker(ILogger<Worker> logger, IOptions<AppSettings> options, IHttpClientFactory httpClientFactory)
 		{
 			_logger = logger;
-			_settings = options.Value;
-			_syncService = new SyncService(_settings);
+			_settings = options;
+			_syncService = new SyncService(_settings.Value);
 		}
 
 		protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,7 +36,7 @@ namespace SincronizadorWorker
 			_timer = new Timer(async state =>
 			{
 				_logger.LogInformation("Ejecutando consulta de worker ...");
-				if (_settings.SubirDatosANube)
+				if (_settings.Value.SubirDatosANube)
 				{
 					_logger.LogInformation("Subiendo datos locales a la nube...");
 					await _syncService.SincronizarHaciaNubeAsync();
@@ -45,7 +46,7 @@ namespace SincronizadorWorker
 			},
 			null,
 			TimeSpan.Zero,
-			TimeSpan.FromMinutes(_settings.IntervaloMinutos));
+			TimeSpan.FromMinutes(_settings.Value.IntervaloMinutos));
 
 			return Task.CompletedTask;
 		}

@@ -27,7 +27,7 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Nuevo método con RequestId opcional
-		public static void WriteLog(string LogsPath, string message, string? requestId = null)
+	public static void WriteLog(string LogsPath, string message, string? requestId = null, string level = "INFO", string category = "General")
 		{
 			try
 			{
@@ -48,7 +48,7 @@ namespace SincronizadorCore.Utils
 				string fullPath = Path.Combine(LogsPath, fileName);
 
 				string safeMessage = FilterSensitive(message);
-				string logLine = $"[{DateTime.Now:HH:mm:ss}]";
+				string logLine = $"[{DateTime.Now:HH:mm:ss}] [{level}] [{category}]";
 				if (!string.IsNullOrWhiteSpace(requestId))
 					logLine += $" [RequestId: {requestId}]";
 				logLine += $" {safeMessage}{Environment.NewLine}";

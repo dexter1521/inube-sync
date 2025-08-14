@@ -10,28 +10,33 @@ namespace SincronizadorCore.Utils
 	public static class SqlHelper
 	{
 		// Marcar productos como exportados
-		public static void MarcarProductosComoExportados(List<string> articulos, string sqlServer)
+		public static async Task MarcarProductosComoExportadosAsync(List<string> articulos, string sqlServer)
 		{
 			if (articulos == null || articulos.Count == 0)
 				return;
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			foreach (var articulo in articulos)
 			{
 				var cmd = new SqlCommand("UPDATE prods SET exportado = 1 WHERE articulo = @articulo", connection);
+				cmd.CommandTimeout = 120;
 				cmd.Parameters.AddWithValue("@articulo", articulo);
-				cmd.ExecuteNonQuery();
+				await cmd.ExecuteNonQueryAsync();
 			}
 		}
 		// Obtener todos los productos locales
-		public static List<ProductoModel> ObtenerTodosProductos(string sqlServer)
+		public static async Task<List<ProductoModel>> ObtenerTodosProductosAsync(string sqlServer, int? batchSize = null, int? batchOffset = null, int? timeoutSeconds = null)
 		{
 			var productos = new List<ProductoModel>();
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
-			var cmd = new SqlCommand("SELECT * FROM prods WHERE exportado = 0 ORDER BY Linea", connection);
-			using var reader = cmd.ExecuteReader();
-			while (reader.Read())
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
+			var query = "SELECT * FROM prods WHERE exportado = 0 ORDER BY Linea";
+			if (batchSize.HasValue && batchOffset.HasValue)
+				query += $" OFFSET {batchOffset.Value} ROWS FETCH NEXT {batchSize.Value} ROWS ONLY";
+			var cmd = new SqlCommand(query, connection);
+			cmd.CommandTimeout = timeoutSeconds ?? 120;
+			using var reader = await cmd.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
 			{
 				var producto = new ProductoModel
 				{
@@ -83,14 +88,15 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Obtener todas las líneas locales no exportadas
-		public static List<LineaModel> ObtenerLineasNoExportadas(string sqlServer)
+		public static async Task<List<LineaModel>> ObtenerLineasNoExportadasAsync(string sqlServer)
 		{
 			var lineas = new List<LineaModel>();
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			var cmd = new SqlCommand("SELECT * FROM lineas WHERE exportado = 0", connection);
-			using var reader = cmd.ExecuteReader();
-			while (reader.Read())
+			cmd.CommandTimeout = 120;
+			using var reader = await cmd.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
 			{
 				var linea = new LineaModel
 				{
@@ -103,33 +109,35 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Marcar líneas como exportadas
-		public static void MarcarLineasComoExportadas(List<string> lineas, string sqlServer)
+		public static async Task MarcarLineasComoExportadasAsync(List<string> lineas, string sqlServer)
 		{
 			if (lineas == null || lineas.Count == 0)
 				return;
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			foreach (var linea in lineas)
 			{
 				var cmd = new SqlCommand("UPDATE lineas SET exportado = 1 WHERE linea = @linea", connection);
+				cmd.CommandTimeout = 120;
 				cmd.Parameters.AddWithValue("@linea", linea);
-				int rows = cmd.ExecuteNonQuery();
+				int rows = await cmd.ExecuteNonQueryAsync();
 				if (rows == 0)
 				{
-					LogService.WriteLog("Logs", $"[WARN] No se pudo marcar como exportada la línea: {linea}");
+					LogService.WriteLog("Logs", $"No se pudo marcar como exportada la línea: {linea}", null, "WARN", "SQL");
 				}
 			}
 		}
 
 		// Obtener todas las marcas locales no exportadas
-		public static List<MarcaModel> ObtenerMarcasNoExportadas(string sqlServer)
+		public static async Task<List<MarcaModel>> ObtenerMarcasNoExportadasAsync(string sqlServer)
 		{
 			var marcas = new List<MarcaModel>();
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			var cmd = new SqlCommand("SELECT * FROM marcas WHERE exportado = 0", connection);
-			using var reader = cmd.ExecuteReader();
-			while (reader.Read())
+			cmd.CommandTimeout = 120;
+			using var reader = await cmd.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
 			{
 				var marca = new MarcaModel
 				{
@@ -142,33 +150,35 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Marcar marcas como exportadas
-		public static void MarcarMarcasComoExportadas(List<string> marcas, string sqlServer)
+		public static async Task MarcarMarcasComoExportadasAsync(List<string> marcas, string sqlServer)
 		{
 			if (marcas == null || marcas.Count == 0)
 				return;
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			foreach (var marca in marcas)
 			{
 				var cmd = new SqlCommand("UPDATE marcas SET exportado = 1 WHERE marca = @marca", connection);
+				cmd.CommandTimeout = 120;
 				cmd.Parameters.AddWithValue("@marca", marca);
-				int rows = cmd.ExecuteNonQuery();
+				int rows = await cmd.ExecuteNonQueryAsync();
 				if (rows == 0)
 				{
-					LogService.WriteLog("Logs", $"[WARN] No se pudo marcar como exportada la marca: {marca}");
+					LogService.WriteLog("Logs", $"No se pudo marcar como exportada la marca: {marca}", null, "WARN", "SQL");
 				}
 			}
 		}
 
 		// Obtener todos los impuestos locales
-		public static List<ImpuestoModel> ObtenerTodosImpuestos(string sqlServer)
+		public static async Task<List<ImpuestoModel>> ObtenerTodosImpuestosAsync(string sqlServer)
 		{
 			var impuestos = new List<ImpuestoModel>();
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			var cmd = new SqlCommand("SELECT * FROM impuestos WHERE exportado = 0", connection);
-			using var reader = cmd.ExecuteReader();
-			while (reader.Read())
+			cmd.CommandTimeout = 120;
+			using var reader = await cmd.ExecuteReaderAsync();
+			while (await reader.ReadAsync())
 			{
 				var impuesto = new ImpuestoModel
 				{
@@ -181,36 +191,38 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Marcar impuestos como exportados
-		public static void MarcarImpuestosComoExportadas(List<string> impuestos, string sqlServer)
+		public static async Task MarcarImpuestosComoExportadasAsync(List<string> impuestos, string sqlServer)
 		{
 			if (impuestos == null || impuestos.Count == 0)
 				return;
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			foreach (var impuesto in impuestos)
 			{
 				var cmd = new SqlCommand("UPDATE impuestos SET exportado = 1 WHERE impuesto = @impuesto", connection);
+				cmd.CommandTimeout = 120;
 				cmd.Parameters.AddWithValue("@impuesto", impuesto);
-				int rows = cmd.ExecuteNonQuery();
+				int rows = await cmd.ExecuteNonQueryAsync();
 				if (rows == 0)
 				{
-					LogService.WriteLog("Logs", $"[WARN] No se pudo marcar como exportado el impuesto: {impuesto}");
+					LogService.WriteLog("Logs", $"No se pudo marcar como exportado el impuesto: {impuesto}", null, "WARN", "SQL");
 				}
 			}
 		}
 
 		// Comienza logical para insertar o actualizar productos desde la API
-		public static void InsertarOActualizarProducto(ProductoModel producto, string sqlServer)
+		public static async Task InsertarOActualizarProductoAsync(ProductoModel producto, string sqlServer)
 		{
 			try
 			{
-				using var connection = new SqlConnection(sqlServer);
-				connection.Open();
+				await using var connection = new SqlConnection(sqlServer);
+				await connection.OpenAsync();
 
 				string existeQuery = "SELECT COUNT(*) FROM prods WHERE articulo = @articulo";
 				using var cmdExiste = new SqlCommand(existeQuery, connection);
+				cmdExiste.CommandTimeout = 120;
 				cmdExiste.Parameters.AddWithValue("@articulo", producto.articulo);
-				int count = (int)cmdExiste.ExecuteScalar();
+				int count = Convert.ToInt32(await cmdExiste.ExecuteScalarAsync());
 
 				if (count > 0)
 				{
@@ -263,7 +275,7 @@ namespace SincronizadorCore.Utils
 					bajocosto = @bajocosto,
 					speso = @speso
 				WHERE articulo = @articulo", connection);
-
+					updateCmd.CommandTimeout = 120;
 					updateCmd.Parameters.AddWithValue("@descrip", producto.descripcion);
 					updateCmd.Parameters.AddWithValue("@marca", producto.marca ?? "SYS");
 					updateCmd.Parameters.AddWithValue("@linea", producto.linea ?? "SYS");
@@ -310,9 +322,9 @@ namespace SincronizadorCore.Utils
 					updateCmd.Parameters.AddWithValue("@bajocosto", producto.bajocosto);
 					updateCmd.Parameters.AddWithValue("@speso", producto.speso);
 					updateCmd.Parameters.AddWithValue("@articulo", producto.articulo);
-					updateCmd.ExecuteNonQuery();
+					await updateCmd.ExecuteNonQueryAsync();
 
-					LogService.WriteLog("Logs", $"[SQL] Producto actualizado: Clave={producto.articulo}, Descripción={producto.descripcion}");
+					LogService.WriteLog("Logs", $"Producto actualizado: Clave={producto.articulo}, Descripción={producto.descripcion}", null, "INFO", "SQL");
 				}
 				else
 				{
@@ -327,7 +339,7 @@ namespace SincronizadorCore.Utils
 					@u1, @u2, @u3, @u4, @u5, @u6, @u7, @u8, @u9, @u10, @ubicacion, @unidad, @bloqueado, @impuesto, @fabricante, @claveprodserv, @claveunidad,
 					@c2, @c3, @c4, @c5, @c6, @c7, @c8, @c9, @c10, @paraventa, @invent, @granel, @bajocosto, @speso
 				)", connection);
-
+					insertCmd.CommandTimeout = 120;
 					insertCmd.Parameters.AddWithValue("@articulo", producto.articulo);
 					insertCmd.Parameters.AddWithValue("@descrip", producto.descripcion);
 					insertCmd.Parameters.AddWithValue("@marca", producto.marca ?? "SYS");
@@ -374,106 +386,117 @@ namespace SincronizadorCore.Utils
 					insertCmd.Parameters.AddWithValue("@granel", producto.granel);
 					insertCmd.Parameters.AddWithValue("@bajocosto", producto.bajocosto);
 					insertCmd.Parameters.AddWithValue("@speso", producto.speso);
-					insertCmd.ExecuteNonQuery();
+					await insertCmd.ExecuteNonQueryAsync();
 
-					LogService.WriteLog("Logs", $"[SQL] Producto insertado: Clave={producto.articulo}, Descripción={producto.descripcion}");
+					LogService.WriteLog("Logs", $"Producto insertado: Clave={producto.articulo}, Descripción={producto.descripcion}", null, "INFO", "SQL");
 				}
 
 				// Validar que la línea existe exactamente antes de actualizar/insertar producto
 				var lineaVal = (producto.linea ?? "").Trim();
 				var lineaQuery = "SELECT COUNT(*) FROM lineas WHERE RTRIM(LTRIM(Linea)) = @Linea";
 				using var cmdLinea = new SqlCommand(lineaQuery, connection);
+				cmdLinea.CommandTimeout = 120;
 				cmdLinea.Parameters.AddWithValue("@Linea", lineaVal);
-				int lineaCount = (int)cmdLinea.ExecuteScalar();
+				int lineaCount = Convert.ToInt32(await cmdLinea.ExecuteScalarAsync());
 				if (lineaCount == 0)
 				{
 					var insertLineaCmd = new SqlCommand("INSERT INTO lineas (Linea) VALUES (@Linea)", connection);
+					insertLineaCmd.CommandTimeout = 120;
 					insertLineaCmd.Parameters.AddWithValue("@Linea", lineaVal);
-					insertLineaCmd.ExecuteNonQuery();
-					LogService.WriteLog("Logs", $"[SQL] Línea insertada: {lineaVal}");
+					await insertLineaCmd.ExecuteNonQueryAsync();
+					LogService.WriteLog("Logs", $"Línea insertada: {lineaVal}", null, "INFO", "SQL");
 				}
 
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog("Logs", $"[SQL] Error con producto {producto.articulo}: {ex.Message}");
+				LogService.WriteLog("Logs", $"Error con producto {producto.articulo}: {ex.Message}", null, "ERROR", "SQL");
 			}
 		}
 
-		public static void InsertarOActualizarLinea(LineaModel linea, string sqlServer)
+		public static async Task InsertarOActualizarLineaAsync(LineaModel linea, string sqlServer)
 		{
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			string existeQuery = "SELECT COUNT(*) FROM lineas WHERE Linea = @Linea";
 			using var cmdExiste = new SqlCommand(existeQuery, connection);
+			cmdExiste.CommandTimeout = 120;
 			cmdExiste.Parameters.AddWithValue("@Linea", linea.Linea);
-			int count = (int)cmdExiste.ExecuteScalar();
+			int count = Convert.ToInt32(await cmdExiste.ExecuteScalarAsync());
 			if (count > 0)
 			{
 				var updateCmd = new SqlCommand("UPDATE lineas SET Descrip = @Descrip WHERE Linea = @Linea", connection);
+				updateCmd.CommandTimeout = 120;
 				updateCmd.Parameters.AddWithValue("@Descrip", linea.Descrip);
 				updateCmd.Parameters.AddWithValue("@Linea", linea.Linea);
-				updateCmd.ExecuteNonQuery();
-				LogService.WriteLog("Logs", $"[SQL] Línea actualizada: Clave={linea.Linea}, Descripción={linea.Descrip}");
+				await updateCmd.ExecuteNonQueryAsync();
+				LogService.WriteLog("Logs", $"Línea actualizada: Clave={linea.Linea}, Descripción={linea.Descrip}", null, "INFO", "SQL");
 			}
 			else
 			{
 				var insertCmd = new SqlCommand("INSERT INTO lineas (Linea, Descrip) VALUES (@Linea, @Descrip)", connection);
+				insertCmd.CommandTimeout = 120;
 				insertCmd.Parameters.AddWithValue("@Linea", linea.Linea);
 				insertCmd.Parameters.AddWithValue("@Descrip", linea.Descrip);
-				insertCmd.ExecuteNonQuery();
-				LogService.WriteLog("Logs", $"[SQL] Línea insertada: Clave={linea.Linea}, Descripción={linea.Descrip}");
+				await insertCmd.ExecuteNonQueryAsync();
+				LogService.WriteLog("Logs", $"Línea insertada: Clave={linea.Linea}, Descripción={linea.Descrip}", null, "INFO", "SQL");
 			}
 		}
 
-		public static void InsertarOActualizarMarca(MarcaModel marca, string sqlServer)
+		public static async Task InsertarOActualizarMarcaAsync(MarcaModel marca, string sqlServer)
 		{
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			string existeQuery = "SELECT COUNT(*) FROM marcas WHERE Marca = @Marca";
 			using var cmdExiste = new SqlCommand(existeQuery, connection);
+			cmdExiste.CommandTimeout = 120;
 			cmdExiste.Parameters.AddWithValue("@Marca", marca.Marca);
-			int count = (int)cmdExiste.ExecuteScalar();
+			int count = Convert.ToInt32(await cmdExiste.ExecuteScalarAsync());
 			if (count > 0)
 			{
 				var updateCmd = new SqlCommand("UPDATE marcas SET Descrip = @Descrip WHERE Marca = @Marca", connection);
+				updateCmd.CommandTimeout = 120;
 				updateCmd.Parameters.AddWithValue("@Descrip", marca.Descrip);
 				updateCmd.Parameters.AddWithValue("@Marca", marca.Marca);
-				updateCmd.ExecuteNonQuery();
-				LogService.WriteLog("Logs", $"[SQL] Marca actualizada: Clave={marca.Marca}, Descripción={marca.Descrip}");
+				await updateCmd.ExecuteNonQueryAsync();
+				LogService.WriteLog("Logs", $"Marca actualizada: Clave={marca.Marca}, Descripción={marca.Descrip}", null, "INFO", "SQL");
 			}
 			else
 			{
 				var insertCmd = new SqlCommand("INSERT INTO marcas (Marca, Descrip) VALUES (@Marca, @Descrip)", connection);
+				insertCmd.CommandTimeout = 120;
 				insertCmd.Parameters.AddWithValue("@Marca", marca.Marca);
 				insertCmd.Parameters.AddWithValue("@Descrip", marca.Descrip);
-				insertCmd.ExecuteNonQuery();
-				LogService.WriteLog("Logs", $"[SQL] Marca insertada: Clave={marca.Marca}, Descripción={marca.Descrip}");
+				await insertCmd.ExecuteNonQueryAsync();
+				LogService.WriteLog("Logs", $"Marca insertada: Clave={marca.Marca}, Descripción={marca.Descrip}", null, "INFO", "SQL");
 			}
 		}
 
-		public static void InsertarOActualizarImpuesto(ImpuestoModel impuesto, string sqlServer)
+		public static async Task InsertarOActualizarImpuestoAsync(ImpuestoModel impuesto, string sqlServer)
 		{
-			using var connection = new SqlConnection(sqlServer);
-			connection.Open();
+			await using var connection = new SqlConnection(sqlServer);
+			await connection.OpenAsync();
 			string existeQuery = "SELECT COUNT(*) FROM impuestos WHERE Impuesto = @Impuesto";
 			using var cmdExiste = new SqlCommand(existeQuery, connection);
+			cmdExiste.CommandTimeout = 120;
 			cmdExiste.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
-			int count = (int)cmdExiste.ExecuteScalar();
+			int count = Convert.ToInt32(await cmdExiste.ExecuteScalarAsync());
 			if (count > 0)
 			{
 				var updateCmd = new SqlCommand("UPDATE impuestos SET Valor = @Valor WHERE Impuesto = @Impuesto", connection);
+				updateCmd.CommandTimeout = 120;
 				updateCmd.Parameters.AddWithValue("@Valor", impuesto.Valor);
 				updateCmd.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
-				updateCmd.ExecuteNonQuery();
-				LogService.WriteLog("Logs", $"[SQL] Impuesto actualizado: Clave={impuesto.Impuesto}, Valor={impuesto.Valor}");
+				await updateCmd.ExecuteNonQueryAsync();
+				LogService.WriteLog("Logs", $"Impuesto actualizado: Clave={impuesto.Impuesto}, Valor={impuesto.Valor}", null, "INFO", "SQL");
 			}
 			else
 			{
 				var insertCmd = new SqlCommand("INSERT INTO impuestos (Impuesto, Valor) VALUES (@Impuesto, @Valor)", connection);
+				insertCmd.CommandTimeout = 120;
 				insertCmd.Parameters.AddWithValue("@Impuesto", impuesto.Impuesto);
 				insertCmd.Parameters.AddWithValue("@Valor", impuesto.Valor);
-				insertCmd.ExecuteNonQuery();
+				await insertCmd.ExecuteNonQueryAsync();
 				LogService.WriteLog("Logs", $"[SQL] Impuesto insertado: Clave={impuesto.Impuesto}, Valor={impuesto.Valor}");
 			}
 		}
