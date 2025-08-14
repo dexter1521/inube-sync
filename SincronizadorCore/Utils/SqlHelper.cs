@@ -10,11 +10,11 @@ namespace SincronizadorCore.Utils
 	public static class SqlHelper
 	{
 		// Marcar productos como exportados
-		public static void MarcarProductosComoExportados(List<string> articulos, string connectionString)
+		public static void MarcarProductosComoExportados(List<string> articulos, string sqlServer)
 		{
 			if (articulos == null || articulos.Count == 0)
 				return;
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			foreach (var articulo in articulos)
 			{
@@ -24,12 +24,12 @@ namespace SincronizadorCore.Utils
 			}
 		}
 		// Obtener todos los productos locales
-		public static List<ProductoModel> ObtenerTodosProductos(string connectionString)
+		public static List<ProductoModel> ObtenerTodosProductos(string sqlServer)
 		{
 			var productos = new List<ProductoModel>();
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
-			var cmd = new SqlCommand("SELECT * FROM prods WHERE exportado = 0", connection);
+			var cmd = new SqlCommand("SELECT * FROM prods WHERE exportado = 0 ORDER BY Linea", connection);
 			using var reader = cmd.ExecuteReader();
 			while (reader.Read())
 			{
@@ -83,10 +83,10 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Obtener todas las líneas locales no exportadas
-		public static List<LineaModel> ObtenerLineasNoExportadas(string connectionString)
+		public static List<LineaModel> ObtenerLineasNoExportadas(string sqlServer)
 		{
 			var lineas = new List<LineaModel>();
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			var cmd = new SqlCommand("SELECT * FROM lineas WHERE exportado = 0", connection);
 			using var reader = cmd.ExecuteReader();
@@ -103,11 +103,11 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Marcar líneas como exportadas
-		public static void MarcarLineasComoExportadas(List<string> lineas, string connectionString)
+		public static void MarcarLineasComoExportadas(List<string> lineas, string sqlServer)
 		{
 			if (lineas == null || lineas.Count == 0)
 				return;
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			foreach (var linea in lineas)
 			{
@@ -122,10 +122,10 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Obtener todas las marcas locales no exportadas
-		public static List<MarcaModel> ObtenerMarcasNoExportadas(string connectionString)
+		public static List<MarcaModel> ObtenerMarcasNoExportadas(string sqlServer)
 		{
 			var marcas = new List<MarcaModel>();
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			var cmd = new SqlCommand("SELECT * FROM marcas WHERE exportado = 0", connection);
 			using var reader = cmd.ExecuteReader();
@@ -142,11 +142,11 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Marcar marcas como exportadas
-		public static void MarcarMarcasComoExportadas(List<string> marcas, string connectionString)
+		public static void MarcarMarcasComoExportadas(List<string> marcas, string sqlServer)
 		{
 			if (marcas == null || marcas.Count == 0)
 				return;
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			foreach (var marca in marcas)
 			{
@@ -161,12 +161,12 @@ namespace SincronizadorCore.Utils
 		}
 
 		// Obtener todos los impuestos locales
-		public static List<ImpuestoModel> ObtenerTodosImpuestos(string connectionString)
+		public static List<ImpuestoModel> ObtenerTodosImpuestos(string sqlServer)
 		{
 			var impuestos = new List<ImpuestoModel>();
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
-			var cmd = new SqlCommand("SELECT * FROM impuestos", connection);
+			var cmd = new SqlCommand("SELECT * FROM impuestos WHERE exportado = 0", connection);
 			using var reader = cmd.ExecuteReader();
 			while (reader.Read())
 			{
@@ -180,12 +180,31 @@ namespace SincronizadorCore.Utils
 			return impuestos;
 		}
 
+		// Marcar impuestos como exportados
+		public static void MarcarImpuestosComoExportadas(List<string> impuestos, string sqlServer)
+		{
+			if (impuestos == null || impuestos.Count == 0)
+				return;
+			using var connection = new SqlConnection(sqlServer);
+			connection.Open();
+			foreach (var impuesto in impuestos)
+			{
+				var cmd = new SqlCommand("UPDATE impuestos SET exportado = 1 WHERE impuesto = @impuesto", connection);
+				cmd.Parameters.AddWithValue("@impuesto", impuesto);
+				int rows = cmd.ExecuteNonQuery();
+				if (rows == 0)
+				{
+					LogService.WriteLog("Logs", $"[WARN] No se pudo marcar como exportado el impuesto: {impuesto}");
+				}
+			}
+		}
+
 		// Comienza logical para insertar o actualizar productos desde la API
-		public static void InsertarOActualizarProducto(ProductoModel producto, string connectionString)
+		public static void InsertarOActualizarProducto(ProductoModel producto, string sqlServer)
 		{
 			try
 			{
-				using var connection = new SqlConnection(connectionString);
+				using var connection = new SqlConnection(sqlServer);
 				connection.Open();
 
 				string existeQuery = "SELECT COUNT(*) FROM prods WHERE articulo = @articulo";
@@ -381,9 +400,9 @@ namespace SincronizadorCore.Utils
 			}
 		}
 
-		public static void InsertarOActualizarLinea(LineaModel linea, string connectionString)
+		public static void InsertarOActualizarLinea(LineaModel linea, string sqlServer)
 		{
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			string existeQuery = "SELECT COUNT(*) FROM lineas WHERE Linea = @Linea";
 			using var cmdExiste = new SqlCommand(existeQuery, connection);
@@ -407,9 +426,9 @@ namespace SincronizadorCore.Utils
 			}
 		}
 
-		public static void InsertarOActualizarMarca(MarcaModel marca, string connectionString)
+		public static void InsertarOActualizarMarca(MarcaModel marca, string sqlServer)
 		{
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			string existeQuery = "SELECT COUNT(*) FROM marcas WHERE Marca = @Marca";
 			using var cmdExiste = new SqlCommand(existeQuery, connection);
@@ -433,9 +452,9 @@ namespace SincronizadorCore.Utils
 			}
 		}
 
-		public static void InsertarOActualizarImpuesto(ImpuestoModel impuesto, string connectionString)
+		public static void InsertarOActualizarImpuesto(ImpuestoModel impuesto, string sqlServer)
 		{
-			using var connection = new SqlConnection(connectionString);
+			using var connection = new SqlConnection(sqlServer);
 			connection.Open();
 			string existeQuery = "SELECT COUNT(*) FROM impuestos WHERE Impuesto = @Impuesto";
 			using var cmdExiste = new SqlCommand(existeQuery, connection);

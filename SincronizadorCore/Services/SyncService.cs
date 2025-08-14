@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -9,6 +7,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using SincronizadorCore.Models;
 using SincronizadorCore.Utils;
+using Polly;
+using Polly.Retry;
 
 
 namespace SincronizadorCore.Services
@@ -27,24 +27,52 @@ namespace SincronizadorCore.Services
 				apiUrl = apiUrl.Substring(0, apiUrl.Length - 4);
 			_httpClient = new HttpClient
 			{
-				BaseAddress = new Uri(apiUrl ?? string.Empty)
+				BaseAddress = new Uri(apiUrl ?? string.Empty),
+				Timeout = TimeSpan.FromSeconds(_settings.TimeoutSeconds > 0 ? _settings.TimeoutSeconds : 30)
 			};
 			_httpClient.DefaultRequestHeaders.Authorization =
-				new AuthenticationHeaderValue("Bearer", _settings.ApiPassword);
+				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _settings.DeviceToken);
+			// Aquí puedes agregar integración con Polly para reintentos usando _settings.Retry
+		}
+
+		private AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy()
+		{
+			var maxRetries = _settings.Retry?.MaxRetries ?? 3;
+			var baseDelay = _settings.Retry?.BaseDelaySeconds ?? 2;
+			return Policy<HttpResponseMessage>
+				.Handle<HttpRequestException>()
+				.OrResult(r => !r.IsSuccessStatusCode)
+				.WaitAndRetryAsync(maxRetries,
+					retryAttempt => TimeSpan.FromSeconds(baseDelay * retryAttempt));
+		}
+
+		// Método auxiliar para GET con reintentos
+		private async Task<HttpResponseMessage> GetWithRetryAsync(string requestUri)
+		{
+			var policy = GetRetryPolicy();
+			return await policy.ExecuteAsync(() => _httpClient.GetAsync(requestUri));
+		}
+
+		// Método auxiliar para POST con reintentos
+		private async Task<HttpResponseMessage> PostWithRetryAsync(string requestUri, HttpContent content)
+		{
+			var policy = GetRetryPolicy();
+			return await policy.ExecuteAsync(() => _httpClient.PostAsync(requestUri, content));
 		}
 
 		// Sincronizar datos locales hacia la nube
 		public async Task SincronizarHaciaNubeAsync()
 		{
+			string requestId = Guid.NewGuid().ToString();
 			try
 			{
 
 				// Subir productos
 
 				// Obtener catálogos locales no exportados para referencia rápida
-				var lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.ConnectionStrings);
-				var marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.ConnectionStrings);
-				var impuestosLocales = SqlHelper.ObtenerTodosImpuestos(_settings.ConnectionStrings);
+				var lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.SqlServer);
+				var marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.SqlServer);
+				var impuestosLocales = SqlHelper.ObtenerTodosImpuestos(_settings.SqlServer);
 
 				// HashSets para evitar crear repetidamente
 				var lineasVerificadas = new HashSet<string>();
@@ -55,7 +83,7 @@ namespace SincronizadorCore.Services
 				List<ProductoModel> productosOrdenados = new List<ProductoModel>();
 				while (true)
 				{
-					var productos = SqlHelper.ObtenerTodosProductos(_settings.ConnectionStrings);
+					var productos = SqlHelper.ObtenerTodosProductos(_settings.SqlServer);
 					if (productos == null || productos.Count == 0)
 						break;
 					// Ordenar solo la primera vez para mantener el ciclo incremental
@@ -78,22 +106,22 @@ namespace SincronizadorCore.Services
 					// 1. Validar/crear línea solo si no se ha verificado
 					if (!string.IsNullOrWhiteSpace(productoNoNull.linea) && !lineasVerificadas.Contains(productoNoNull.linea))
 					{
-						var getLinea = await _httpClient.GetAsync($"/api/lineas/{Uri.EscapeDataString(productoNoNull.linea)}");
-						if (!getLinea.IsSuccessStatusCode)
+						var getLinea = await GetWithRetryAsync($"/api/lineas/{Uri.EscapeDataString(productoNoNull.linea)}");
+						if ((int)getLinea.StatusCode == 404)
 						{
-							lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.ConnectionStrings);
+							lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.SqlServer);
 							var lineaLocal = lineasNoExportadas.Find(l => l.Linea == productoNoNull.linea);
 							if (lineaLocal != null)
 							{
 								var lineaContent = new StringContent(JsonSerializer.Serialize(lineaLocal), Encoding.UTF8, "application/json");
-								var postLinea = await _httpClient.PostAsync("/api/lineas", lineaContent);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Línea auto-creada para producto {productoNoNull.articulo}: {productoNoNull.linea} - {postLinea.StatusCode}");
+								var postLinea = await PostWithRetryAsync("/api/lineas", lineaContent);
+								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Línea auto-creada para producto {productoNoNull.articulo}: {productoNoNull.linea} - {postLinea.StatusCode}", requestId);
 								if (postLinea.IsSuccessStatusCode)
 								{
-									SqlHelper.MarcarLineasComoExportadas(new List<string> { productoNoNull.linea }, _settings.ConnectionStrings);
-									LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Línea marcada como exportada: {productoNoNull.linea}");
+									SqlHelper.MarcarLineasComoExportadas(new List<string> { productoNoNull.linea }, _settings.SqlServer);
+									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Línea marcada como exportada: {productoNoNull.linea}", requestId);
 									// Refrescar la lista después de marcar como exportada
-									lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.ConnectionStrings);
+									lineasNoExportadas = SqlHelper.ObtenerLineasNoExportadas(_settings.SqlServer);
 								}
 							}
 						}
@@ -101,22 +129,22 @@ namespace SincronizadorCore.Services
 					}
 					// (Eliminado control de productosProcesados, ya no es necesario)
 					{
-						var getMarca = await _httpClient.GetAsync($"/api/marcas/{Uri.EscapeDataString(productoNoNull.marca)}");
-						if (!getMarca.IsSuccessStatusCode)
+						var getMarca = await GetWithRetryAsync($"/api/marcas/{Uri.EscapeDataString(productoNoNull.marca)}");
+						if ((int)getMarca.StatusCode == 404)
 						{
-							marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.ConnectionStrings);
+							marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.SqlServer);
 							var marcaLocal = marcasNoExportadas.Find(m => m.Marca == productoNoNull.marca);
 							if (marcaLocal != null)
 							{
 								var marcaContent = new StringContent(JsonSerializer.Serialize(marcaLocal), Encoding.UTF8, "application/json");
-								var postMarca = await _httpClient.PostAsync("/api/marcas", marcaContent);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Marca auto-creada para producto {productoNoNull.articulo}: {productoNoNull.marca} - {postMarca.StatusCode}");
+								var postMarca = await PostWithRetryAsync("/api/marcas", marcaContent);
+								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Marca auto-creada para producto {productoNoNull.articulo}: {productoNoNull.marca} - {postMarca.StatusCode}", requestId);
 								if (postMarca.IsSuccessStatusCode)
 								{
-									SqlHelper.MarcarMarcasComoExportadas(new List<string> { productoNoNull.marca }, _settings.ConnectionStrings);
-									LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Marca marcada como exportada: {productoNoNull.marca}");
+									SqlHelper.MarcarMarcasComoExportadas(new List<string> { productoNoNull.marca }, _settings.SqlServer);
+									LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Marca marcada como exportada: {productoNoNull.marca}", requestId);
 									// Refrescar la lista después de marcar como exportada
-									marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.ConnectionStrings);
+									marcasNoExportadas = SqlHelper.ObtenerMarcasNoExportadas(_settings.SqlServer);
 								}
 							}
 						}
@@ -126,15 +154,15 @@ namespace SincronizadorCore.Services
 					// 3. Validar/crear impuesto solo si no se ha verificado
 					if (!string.IsNullOrWhiteSpace(productoNoNull.impuesto) && !impuestosVerificados.Contains(productoNoNull.impuesto))
 					{
-						var getImpuesto = await _httpClient.GetAsync($"/api/impuestos/{Uri.EscapeDataString(productoNoNull.impuesto)}");
-						if (!getImpuesto.IsSuccessStatusCode)
+						var getImpuesto = await GetWithRetryAsync($"/api/impuestos/{Uri.EscapeDataString(productoNoNull.impuesto)}");
+						if ((int)getImpuesto.StatusCode == 404)
 						{
 							var impuestoLocal = impuestosLocales.Find(i => i.Impuesto == productoNoNull.impuesto);
 							if (impuestoLocal != null)
 							{
 								var impuestoContent = new StringContent(JsonSerializer.Serialize(impuestoLocal), Encoding.UTF8, "application/json");
-								var postImpuesto = await _httpClient.PostAsync("/api/impuestos", impuestoContent);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Impuesto auto-creado para producto {productoNoNull.articulo}: {productoNoNull.impuesto} - {postImpuesto.StatusCode}");
+								var postImpuesto = await PostWithRetryAsync("/api/impuestos", impuestoContent);
+								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Impuesto auto-creado para producto {productoNoNull.articulo}: {productoNoNull.impuesto} - {postImpuesto.StatusCode}", requestId);
 							}
 						}
 						impuestosVerificados.Add(productoNoNull.impuesto);
@@ -192,52 +220,52 @@ namespace SincronizadorCore.Services
 						ClaveUnidad = string.IsNullOrWhiteSpace(productoNoNull.claveunidad) ? "H87" : productoNoNull.claveunidad
 					};
 					var content = new StringContent(JsonSerializer.Serialize(upload), Encoding.UTF8, "application/json");
-					var getResp = await _httpClient.GetAsync($"/api/productos/{Uri.EscapeDataString(producto.articulo)}");
+					var getResp = await GetWithRetryAsync($"/api/productos/{Uri.EscapeDataString(producto.articulo)}");
 					if (getResp.IsSuccessStatusCode)
 					{
 						// Solo PUT si el producto ya existe en la nube
 						var putResp = await _httpClient.PutAsync($"/api/productos/{Uri.EscapeDataString(producto.articulo)}", content);
 						var putMsg = putResp.IsSuccessStatusCode ? "Actualizado" : "Error al actualizar";
 						var putError = putResp.IsSuccessStatusCode ? "" : $" | Error: {await putResp.Content.ReadAsStringAsync()}";
-						LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto {producto.articulo} (PUT): {putResp.StatusCode} - {putMsg}{putError}");
+						LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (PUT): {putResp.StatusCode} - {putMsg}{putError}", requestId);
 						if (putResp.IsSuccessStatusCode)
 						{
-							SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.ConnectionStrings);
-							LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}");
+							SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.SqlServer);
+							LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
 						}
 					}
 					else
 					{
 						// Solo POST si el producto no existe en la nube
-						var postResp = await _httpClient.PostAsync("/api/productos", content);
+						var postResp = await PostWithRetryAsync("/api/productos", content);
 						var postMsg = postResp.IsSuccessStatusCode ? "Registrado" : "Error al registrar";
 						var postError = postResp.IsSuccessStatusCode ? "" : $" | Error: {await postResp.Content.ReadAsStringAsync()}";
 						if (!postResp.IsSuccessStatusCode)
 						{
-							LogService.WriteLog(_settings.LogDirectory, $"[DEBUG] JSON enviado para {producto.articulo}: {JsonSerializer.Serialize(upload)}");
+							LogService.WriteLog(_settings.LogsPath, $"[DEBUG] JSON enviado para {producto.articulo}: {JsonSerializer.Serialize(upload)}", requestId);
 							// Si el error es 422, marcar como exportado y continuar
 							if ((int)postResp.StatusCode == 422)
 							{
-								SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.ConnectionStrings);
-								LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.");
+								SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.SqlServer);
+								LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.", requestId);
 								continue;
 							}
 						}
-						LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto {producto.articulo} (POST): {postResp.StatusCode} - {postMsg}{postError}");
+						LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto {producto.articulo} (POST): {postResp.StatusCode} - {postMsg}{postError}", requestId);
 						if (postResp.IsSuccessStatusCode)
 						{
-							SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.ConnectionStrings);
-							LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}");
+							SqlHelper.MarcarProductosComoExportados(new List<string> { producto.articulo }, _settings.SqlServer);
+							LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
 						}
 					}
 				}
 
 
-				LogService.WriteLog(_settings.LogDirectory, "[UPLOAD] Sincronización hacia la nube finalizada.");
+				LogService.WriteLog(_settings.LogsPath, "[UPLOAD] Sincronización hacia la nube finalizada.", requestId);
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog(_settings.LogDirectory, $"[UPLOAD] Error al sincronizar hacia la nube: {ex.Message}");
+				LogService.WriteLog(_settings.LogsPath, $"[UPLOAD] Error al sincronizar hacia la nube: {ex.Message}", requestId);
 			}
 		}
 
@@ -248,7 +276,7 @@ namespace SincronizadorCore.Services
 			try
 			{
 				_httpClient.DefaultRequestHeaders.Authorization =
-					new AuthenticationHeaderValue("Bearer", _settings.ApiPassword);
+					new AuthenticationHeaderValue("Bearer", _settings.DeviceToken);
 
 				var response = await _httpClient.GetAsync("/api/productos");
 
@@ -258,16 +286,16 @@ namespace SincronizadorCore.Services
 					productos = JsonSerializer.Deserialize<List<ProductoModel>>(json,
 						new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<ProductoModel>();
 
-					LogService.WriteLog(_settings.LogDirectory, $"[API] Se obtuvieron {productos.Count} productos.");
+					LogService.WriteLog(_settings.LogsPath, $"[API] Se obtuvieron {productos.Count} productos.");
 				}
 				else
 				{
-					LogService.WriteLog(_settings.LogDirectory, $"[API] Error al obtener productos: {response.StatusCode}");
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener productos: {response.StatusCode}");
 				}
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Excepción: {ex.Message}");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Excepción: {ex.Message}");
 			}
 
 			return productos;
@@ -281,7 +309,7 @@ namespace SincronizadorCore.Services
 				var pendientesResponse = await _httpClient.GetAsync($"/api/prods_download/pendientes/{_settings.ApiUser}");
 				if (!pendientesResponse.IsSuccessStatusCode)
 				{
-					LogService.WriteLog(_settings.LogDirectory, $"[API] Error al obtener pendientes: {pendientesResponse.StatusCode}");
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener pendientes: {pendientesResponse.StatusCode}");
 					return;
 				}
 
@@ -290,7 +318,7 @@ namespace SincronizadorCore.Services
 
 				if (pendientes.Count == 0)
 				{
-					LogService.WriteLog(_settings.LogDirectory, "[SYNC] No hay productos pendientes para actualizar precios.");
+					LogService.WriteLog(_settings.LogsPath, "[SYNC] No hay productos pendientes para actualizar precios.");
 					return;
 				}
 
@@ -305,18 +333,18 @@ namespace SincronizadorCore.Services
 				{
 					// Validar y registrar/actualizar línea
 					var linea = new LineaModel { Linea = producto.linea ?? "SYS", Descrip = producto.linea ?? "" };
-					SqlHelper.InsertarOActualizarLinea(linea, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarLinea(linea, _settings.SqlServer);
 
 					// Validar y registrar/actualizar marca
 					var marca = new MarcaModel { Marca = producto.marca ?? "SYS", Descrip = producto.marca ?? "" };
-					SqlHelper.InsertarOActualizarMarca(marca, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarMarca(marca, _settings.SqlServer);
 
 					// Validar y registrar/actualizar impuesto
 					var impuesto = new ImpuestoModel { Impuesto = producto.impuesto ?? "SYS", Valor = 0 };
-					SqlHelper.InsertarOActualizarImpuesto(impuesto, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarImpuesto(impuesto, _settings.SqlServer);
 
 					// Actualizar producto
-					SqlHelper.InsertarOActualizarProducto(producto, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarProducto(producto, _settings.SqlServer);
 
 					// Confirmar la actualización con el endpoint POST
 					var pendiente = pendientes.FirstOrDefault(p => p.Clave == producto.articulo);
@@ -326,31 +354,31 @@ namespace SincronizadorCore.Services
 						var confirmResponse = await _httpClient.PostAsync("/api/prods_download/aplicar", confirmContent);
 						if (confirmResponse.IsSuccessStatusCode)
 						{
-							LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Confirmado producto pendiente id={pendiente.Id} clave={pendiente.Clave}");
+							LogService.WriteLog(_settings.LogsPath, $"[SYNC] Confirmado producto pendiente id={pendiente.Id} clave={pendiente.Clave}");
 						}
 						else
 						{
-							LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Error al confirmar producto pendiente id={pendiente.Id} clave={pendiente.Clave}: {confirmResponse.StatusCode}");
+							LogService.WriteLog(_settings.LogsPath, $"[SYNC] Error al confirmar producto pendiente id={pendiente.Id} clave={pendiente.Clave}: {confirmResponse.StatusCode}");
 						}
 					}
 
-					LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Se actualizaron precios de {productosActualizar.Count} productos pendientes y se confirmó cada uno.");
+					LogService.WriteLog(_settings.LogsPath, $"[SYNC] Se actualizaron precios de {productosActualizar.Count} productos pendientes y se confirmó cada uno.");
 				}
 			}
 			catch (Exception ex)
 			{
-				LogService.WriteLog(_settings.LogDirectory, $"[SYNC] Error en sincronización de precios pendientes: {ex.Message}");
+				LogService.WriteLog(_settings.LogsPath, $"[SYNC] Error en sincronización de precios pendientes: {ex.Message}");
 			}
 		}
 		public async Task ConsultarDispositivosAsync()
 		{
 			_httpClient.DefaultRequestHeaders.Authorization =
-				new AuthenticationHeaderValue("Bearer", _settings.ApiPassword);
+				new AuthenticationHeaderValue("Bearer", _settings.DeviceToken);
 
 			var response = await _httpClient.GetAsync("/api/dispositivos");
 			var result = await response.Content.ReadAsStringAsync();
 
-			LogService.WriteLog(_settings.LogDirectory,
+			LogService.WriteLog(_settings.LogsPath,
 				$"GET dispositivos: {(int)response.StatusCode} - {result}");
 		}
 
@@ -370,14 +398,14 @@ namespace SincronizadorCore.Services
 						Linea = linea.Linea ?? string.Empty,
 						Descrip = linea.Descrip ?? string.Empty
 					};
-					SqlHelper.InsertarOActualizarLinea(lineaLocal, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarLinea(lineaLocal, _settings.SqlServer);
 					count++;
 				}
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Se sincronizaron {count} líneas.");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} líneas.");
 			}
 			else
 			{
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Error al obtener líneas: {response.StatusCode}");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener líneas: {response.StatusCode}");
 			}
 		}
 
@@ -397,14 +425,14 @@ namespace SincronizadorCore.Services
 						Marca = marca.Marca ?? string.Empty,
 						Descrip = marca.Descrip ?? string.Empty
 					};
-					SqlHelper.InsertarOActualizarMarca(marcaLocal, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarMarca(marcaLocal, _settings.SqlServer);
 					count++;
 				}
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Se sincronizaron {count} marcas.");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} marcas.");
 			}
 			else
 			{
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Error al obtener marcas: {response.StatusCode}");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener marcas: {response.StatusCode}");
 			}
 		}
 
@@ -424,14 +452,14 @@ namespace SincronizadorCore.Services
 						Impuesto = impuesto.Impuesto ?? string.Empty,
 						Valor = impuesto.Valor
 					};
-					SqlHelper.InsertarOActualizarImpuesto(impuestoLocal, _settings.ConnectionStrings);
+					SqlHelper.InsertarOActualizarImpuesto(impuestoLocal, _settings.SqlServer);
 					count++;
 				}
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Se sincronizaron {count} impuestos.");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Se sincronizaron {count} impuestos.");
 			}
 			else
 			{
-				LogService.WriteLog(_settings.LogDirectory, $"[API] Error al obtener impuestos: {response.StatusCode}");
+				LogService.WriteLog(_settings.LogsPath, $"[API] Error al obtener impuestos: {response.StatusCode}");
 			}
 		}
 	}
