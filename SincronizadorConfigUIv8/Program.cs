@@ -1,17 +1,44 @@
+using System.Security.Principal;
+using System.Diagnostics;
+
 namespace SincronizadorConfigUIv8
 {
 	internal static class Program
 	{
-		/// <summary>
-		///  The main entry point for the application.
-		/// </summary>
 		[STAThread]
 		static void Main()
 		{
-			// To customize application configuration such as set high DPI settings or default font,
-			// see https://aka.ms/applicationconfiguration.
+			EnsureRunAsAdmin();
 			ApplicationConfiguration.Initialize();
 			Application.Run(new Panel());
+		}
+
+		static bool IsAdministrator()
+		{
+			using var wi = WindowsIdentity.GetCurrent();
+			var wp = new WindowsPrincipal(wi);
+			return wp.IsInRole(WindowsBuiltInRole.Administrator);
+		}
+
+		static void EnsureRunAsAdmin()
+		{
+			if (IsAdministrator()) return;
+			var exe = Process.GetCurrentProcess().MainModule!.FileName!;
+			var psi = new ProcessStartInfo(exe)
+			{
+				UseShellExecute = true,
+				Verb = "runas"
+			};
+			try
+			{
+				Process.Start(psi);
+				Environment.Exit(0);
+			}
+			catch
+			{
+				MessageBox.Show("Se requieren privilegios de Administrador para controlar el servicio.");
+				Environment.Exit(1);
+			}
 		}
 	}
 }

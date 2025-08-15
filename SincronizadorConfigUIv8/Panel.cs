@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ServiceProcess;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -7,67 +8,75 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SincronizadorCore;
-using SincronizadorCore.Utils;
+using SincronizadorConfigUIv8;
+using SincronizadorCore.Models;
 
 namespace SincronizadorConfigUIv8
 {
 	public partial class Panel : Form
 	{
-		// Campos para el control del proceso de sincronización
-		private SincronizadorCore.Services.SyncService? _syncService;
-		private System.Threading.CancellationTokenSource? _cts;
 		private AppSettings _settings;
+		private RootConfig _config;
+		const string SERVICE_NAME = "InubeSync";
+		string _configPath = "";
+		RootConfig _cfg = new RootConfig();
 		public Panel()
 		{
 			_settings = new AppSettings();
+			_config = new RootConfig();
 			InitializeComponent();
+			try
+			{
+				_configPath = ConfigHelper.GetAppSettingsPath(SERVICE_NAME);
+			}
+			catch
+			{
+				_configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "appsettings.json");
+			}
 		}
 
 		// Botón para iniciar sincronización
-		private async void btnIniciar_Click(object sender, EventArgs e)
+		private void btnIniciar_Click(object sender, EventArgs e)
 		{
-			var settings = ConfigHelper.LoadConfig();
-			_cts = new System.Threading.CancellationTokenSource();
-			_syncService = new SincronizadorCore.Services.SyncService(settings);
-
-			btnIniciar.Enabled = false;
-			btnDetener.Enabled = true;
-
-			// Mostrar progressBar en modo indeterminado
-			progressBar1.Style = ProgressBarStyle.Marquee;
-			progressBar1.Visible = true;
-			// Actualizar estado visual
-			lblEstado.Text = "Sincronizando...";
-			lblEstado.ForeColor = System.Drawing.Color.Blue;
-
 			try
 			{
-				await System.Threading.Tasks.Task.Run(() => _syncService.SincronizarHaciaNubeAsync(), _cts.Token);
-				MessageBox.Show("Sincronización finalizada.");
-				lblEstado.Text = "Listo";
-				lblEstado.ForeColor = System.Drawing.Color.Green;
+				using var sc = GetController(SERVICE_NAME);
+				if (sc.Status == ServiceControllerStatus.Running)
+				{
+					MessageBox.Show("El servicio ya está iniciado."); return;
+				}
+				sc.Start();
+				sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
+				RefreshServiceStatus();
 			}
-			catch (System.OperationCanceledException)
+			catch (System.Exception ex)
 			{
-				MessageBox.Show("Sincronización detenida por el usuario.");
-				lblEstado.Text = "Cancelado";
-				lblEstado.ForeColor = System.Drawing.Color.OrangeRed;
-			}
-			finally
-			{
-				btnIniciar.Enabled = true;
-				btnDetener.Enabled = false;
-				// Ocultar progressBar al finalizar
-				progressBar1.Style = ProgressBarStyle.Blocks;
-				progressBar1.Visible = false;
+
+				MessageBox.Show("No se pudo iniciar: " + ex.Message);
 			}
 		}
 
 		// Botón para detener sincronización
 		private void btnDetener_Click(object sender, EventArgs e)
 		{
-			_cts?.Cancel();
+			try
+			{
+				using var sc = GetController(SERVICE_NAME);
+				if (sc.CanStop && sc.Status == ServiceControllerStatus.Running)
+				{
+					sc.Stop();
+					sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
+					RefreshServiceStatus();
+				}
+				else
+				{
+					MessageBox.Show("El servicio no admite detención o no está corriendo.");
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("No se pudo detener: " + ex.Message);
+			}
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -84,17 +93,17 @@ namespace SincronizadorConfigUIv8
 		{
 			try
 			{
-				_settings = ConfigHelper.LoadConfig();
+				_config = ConfigHelper.LoadConfig();
+				_settings = _config.AppSettings;
 				nudIntervalo.Value = _settings.IntervaloMinutos > 0 ? _settings.IntervaloMinutos : 1;
 				txtApiUrl.Text = _settings.ApiUrl;
 				txtApiUser.Text = _settings.ApiUser;
 				txtDeviceToken.Text = _settings.DeviceToken;
-				txtLogsPath.Text = _settings.LogsPath;
 				txtConnectionString.Text = _settings.SqlServer;
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Error al cargar configuración:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Error al cargar configuración:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -109,9 +118,9 @@ namespace SincronizadorConfigUIv8
 				_settings.ApiUrl = txtApiUrl.Text.Trim();
 				_settings.ApiUser = txtApiUser.Text.Trim();
 				_settings.DeviceToken = txtDeviceToken.Text.Trim();
-				_settings.LogsPath = txtLogsPath.Text.Trim();
 				_settings.SqlServer = txtConnectionString.Text.Trim();
-				ConfigHelper.SaveConfig(_settings);
+				_config.AppSettings = _settings;
+				ConfigHelper.SaveConfig(_config);
 
 				MessageBox.Show("Configuración guardada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				if (Panel.ActiveForm != null)
@@ -119,7 +128,7 @@ namespace SincronizadorConfigUIv8
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Error al guardar configuración:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Error al guardar configuración:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -147,47 +156,10 @@ namespace SincronizadorConfigUIv8
 				return false;
 			}
 
-			string logDir = txtLogsPath.Text.Trim();
-
-			// Validar caracteres inválidos en la ruta de logs
-			if (logDir.Any(c => Path.GetInvalidPathChars().Contains(c)))
+			if (string.IsNullOrWhiteSpace(txtDeviceToken.Text))
 			{
-				MessageBox.Show("La ruta del directorio de logs contiene caracteres inválidos.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("El DeviceToken no puede estar vacío.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return false;
-			}
-
-			// Validar si hay caracteres prohibidos en carpetas
-			char[] caracteresProhibidos = Path.GetInvalidFileNameChars();
-			if (logDir.IndexOfAny(caracteresProhibidos) >= 0)
-			{
-				MessageBox.Show("La ruta del directorio de logs contiene caracteres no permitidos por el sistema.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				return false;
-			}
-
-			if (!Directory.Exists(logDir))
-			{
-				var resultado = MessageBox.Show(
-					$"El directorio '{logDir}' no existe. ¿Deseas crearlo?",
-					"Directorio no encontrado",
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question);
-
-				if (resultado == DialogResult.Yes)
-				{
-					try
-					{
-						Directory.CreateDirectory(logDir);
-					}
-					catch (Exception ex)
-					{
-						MessageBox.Show($"No se pudo crear el directorio:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-						return false;
-					}
-				}
-				else
-				{
-					return false;
-				}
 			}
 
 
@@ -197,14 +169,51 @@ namespace SincronizadorConfigUIv8
 		}
 
 
+		// Auxiliar para obtener el controlador del servicio
+		private ServiceController GetController(string serviceName)
+		{
+			return new ServiceController(serviceName);
+		}
 
+		// Refresca el estado del servicio en la UI
+		private void RefreshServiceStatus()
+		{
+			try
+			{
+				using var sc = GetController(SERVICE_NAME);
+				lblEstado.Text = $"Estado: {sc.Status}";
+			}
+			catch
+			{
+				lblEstado.Text = "Estado: desconocido";
+			}
+		}
 
+		private async void btnReiniciar_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				using var sc = GetController(SERVICE_NAME);
+				if (sc.Status == ServiceControllerStatus.Running)
+				{
+					if (!sc.CanStop) { MessageBox.Show("El servicio no puede detenerse."); return; }
+					sc.Stop();
+					sc.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(30));
+				}
 
+				// Pequeña espera para liberar handles de archivos
+				await Task.Delay(1000);
 
+				sc.Start();
+				sc.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
+				RefreshServiceStatus();
+			}
+			catch (System.Exception ex)
+			{
 
-
-
-
+				MessageBox.Show("No se pudo reiniciar: " + ex.Message);
+			}
+		}
 
 	}
 }

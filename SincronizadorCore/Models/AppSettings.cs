@@ -8,10 +8,9 @@ namespace SincronizadorCore.Models
 		public string? DeviceToken { get; set; }
 		public string? SqlServer { get; set; }
 		public int TimeoutSeconds { get; set; }
-		public int BatchSize { get; set; }
+		public int BatchSize { get; set; } = 100;
 		public RetrySettings? Retry { get; set; }
 		public bool SubirDatosANube { get; set; }
-		public string? LogsPath { get; set; } = "C:\\Inube\\Logs";
 	}
 
 	public sealed class RetrySettings
@@ -22,6 +21,19 @@ namespace SincronizadorCore.Models
 
 	public sealed class LoggingSettings
 	{
+		public Dictionary<string, string> LogLevel { get; set; } = new()
+		{
+			{ "Default", "Information" },
+			{ "Microsoft.Hosting.Lifetime", "Information" }
+		};
 		public string LogsPath { get; set; } = "C:\\Inube\\Logs";
 	}
+
+	public class RootConfig
+	{
+		public LoggingSettings Logging { get; set; } = new();
+		public AppSettings AppSettings { get; set; } = new();
+	}	
+
+	// Eliminado LogLevelSettings, ahora LogLevel es un Dictionary<string, string>
 }

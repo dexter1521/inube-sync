@@ -34,12 +34,10 @@
 			groupBox1 = new GroupBox();
 			btnGuardar = new Button();
 			btnCargar = new Button();
-			txtLogsPath = new TextBox();
 			txtConnectionString = new TextBox();
 			nudIntervalo = new NumericUpDown();
 			label6 = new Label();
 			label5 = new Label();
-			label4 = new Label();
 			label3 = new Label();
 			txtDeviceToken = new TextBox();
 			txtApiUser = new TextBox();
@@ -60,6 +58,7 @@
 			logDataGridView = new DataGridView();
 			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			progressBar1 = new ProgressBar();
+			btnReiniciar = new Button();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)nudIntervalo).BeginInit();
 			groupBox2.SuspendLayout();
@@ -88,14 +87,13 @@
 			// 
 			// groupBox1
 			// 
+			groupBox1.Controls.Add(btnReiniciar);
 			groupBox1.Controls.Add(btnGuardar);
 			groupBox1.Controls.Add(btnCargar);
-			groupBox1.Controls.Add(txtLogsPath);
 			groupBox1.Controls.Add(txtConnectionString);
 			groupBox1.Controls.Add(nudIntervalo);
 			groupBox1.Controls.Add(label6);
 			groupBox1.Controls.Add(label5);
-			groupBox1.Controls.Add(label4);
 			groupBox1.Controls.Add(label3);
 			groupBox1.Controls.Add(txtDeviceToken);
 			groupBox1.Controls.Add(txtApiUser);
@@ -137,17 +135,9 @@
 			btnCargar.UseVisualStyleBackColor = true;
 			btnCargar.Click += btnCargar_Click;
 			// 
-			// txtLogsPath
-			// 
-			txtLogsPath.Location = new Point(421, 16);
-			txtLogsPath.Margin = new Padding(4);
-			txtLogsPath.Name = "txtLogsPath";
-			txtLogsPath.Size = new Size(176, 20);
-			txtLogsPath.TabIndex = 27;
-			// 
 			// txtConnectionString
 			// 
-			txtConnectionString.Location = new Point(421, 38);
+			txtConnectionString.Location = new Point(421, 13);
 			txtConnectionString.Margin = new Padding(4);
 			txtConnectionString.Name = "txtConnectionString";
 			txtConnectionString.Size = new Size(176, 20);
@@ -155,7 +145,7 @@
 			// 
 			// nudIntervalo
 			// 
-			nudIntervalo.Location = new Point(421, 61);
+			nudIntervalo.Location = new Point(421, 39);
 			nudIntervalo.Margin = new Padding(4);
 			nudIntervalo.Name = "nudIntervalo";
 			nudIntervalo.Size = new Size(176, 20);
@@ -165,7 +155,7 @@
 			// label6
 			// 
 			label6.AutoSize = true;
-			label6.Location = new Point(336, 61);
+			label6.Location = new Point(336, 41);
 			label6.Margin = new Padding(4, 0, 4, 0);
 			label6.Name = "label6";
 			label6.Size = new Size(77, 13);
@@ -175,22 +165,12 @@
 			// label5
 			// 
 			label5.AutoSize = true;
-			label5.Location = new Point(336, 41);
+			label5.Location = new Point(336, 19);
 			label5.Margin = new Padding(4, 0, 4, 0);
 			label5.Name = "label5";
 			label5.Size = new Size(59, 13);
 			label5.TabIndex = 23;
 			label5.Text = "Conexión";
-			// 
-			// label4
-			// 
-			label4.AutoSize = true;
-			label4.Location = new Point(336, 19);
-			label4.Margin = new Padding(4, 0, 4, 0);
-			label4.Name = "label4";
-			label4.Size = new Size(55, 13);
-			label4.TabIndex = 22;
-			label4.Text = "Dir. Logs";
 			// 
 			// label3
 			// 
@@ -255,22 +235,22 @@
 			btnDetener.Name = "btnDetener";
 			btnDetener.Size = new Size(100, 32);
 			btnDetener.TabIndex = 15;
-			btnDetener.Text = "Detener Servicio";
+			btnDetener.Text = "Detener";
 			btnDetener.UseVisualStyleBackColor = true;
 			// 
 			// btnIniciar
 			// 
-			btnIniciar.Location = new Point(674, 45);
+			btnIniciar.Location = new Point(674, 13);
 			btnIniciar.Name = "btnIniciar";
 			btnIniciar.Size = new Size(101, 29);
 			btnIniciar.TabIndex = 14;
-			btnIniciar.Text = "Iniciar Servicio";
+			btnIniciar.Text = "Iniciar";
 			btnIniciar.UseVisualStyleBackColor = true;
 			// 
 			// lblEstado
 			// 
 			lblEstado.AutoSize = true;
-			lblEstado.Location = new Point(651, 16);
+			lblEstado.Location = new Point(619, 96);
 			lblEstado.Name = "lblEstado";
 			lblEstado.Size = new Size(28, 13);
 			lblEstado.TabIndex = 11;
@@ -391,6 +371,16 @@
 			progressBar1.Size = new Size(774, 26);
 			progressBar1.TabIndex = 15;
 			// 
+			// btnReiniciar
+			// 
+			btnReiniciar.Location = new Point(674, 45);
+			btnReiniciar.Name = "btnReiniciar";
+			btnReiniciar.Size = new Size(101, 29);
+			btnReiniciar.TabIndex = 30;
+			btnReiniciar.Text = "Recargar";
+			btnReiniciar.UseVisualStyleBackColor = true;
+			btnReiniciar.Click += btnReiniciar_Click;
+			// 
 			// Panel
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
@@ -446,13 +436,12 @@
 		private TextBox txtApiUser;
 		private TextBox txtDeviceToken;
 		private Label label3;
-		private Label label4;
 		private Label label5;
 		private Label label6;
 		private NumericUpDown nudIntervalo;
 		private TextBox txtConnectionString;
-		private TextBox txtLogsPath;
 		private Button btnCargar;
 		private Button btnGuardar;
+		private Button btnReiniciar;
 	}
 }

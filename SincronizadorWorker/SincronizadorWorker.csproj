@@ -29,4 +29,8 @@
   <ItemGroup>
     <ProjectReference Include="..\SincronizadorCore\SincronizadorCore.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logs\" />
+  </ItemGroup>
 </Project>
