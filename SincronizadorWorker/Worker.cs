@@ -32,22 +32,38 @@ namespace SincronizadorWorker
 		{
 			_logger.LogInformation("Servicio iniciado.");
 
+			var intervalo = TimeSpan.FromMinutes(_settings.Value.IntervaloMinutos);
+			var timer = new PeriodicTimer(intervalo);
 
-			_timer = new Timer(async state =>
+			// Ejecuta la primera iteración inmediatamente
+			async Task EjecutarCiclo()
 			{
-				_logger.LogInformation("Ejecutando consulta de worker ...");
-				if (_settings.Value.SubirDatosANube)
+				while (!stoppingToken.IsCancellationRequested)
 				{
-					_logger.LogInformation("Subiendo datos locales a la nube...");
-					await _syncService.SincronizarHaciaNubeAsync();
-				}
-				await _syncService.SincronizarDesdeApiAsync();
-				_logger.LogInformation("Ejecutando sincronización desde la API...");
-			},
-			null,
-			TimeSpan.Zero,
-			TimeSpan.FromMinutes(_settings.Value.IntervaloMinutos));
+					try
+					{
+						_logger.LogInformation("Ejecutando consulta de worker ...");
+						if (_settings.Value.SubirDatosANube)
+						{
+							_logger.LogInformation("Subiendo datos locales a la nube...");
+							await _syncService.SincronizarHaciaNubeAsync();
+						}
+						await _syncService.SincronizarDesdeApiAsync();
+						_logger.LogInformation("Ejecutando sincronización desde la API...");
+					}
+					catch (Exception ex)
+					{
+						_logger.LogError(ex, "Error en ciclo de sincronización");
+					}
 
+					// Espera el siguiente ciclo o termina si se cancela
+					if (!await timer.WaitForNextTickAsync(stoppingToken))
+						break;
+				}
+			}
+
+			// Ejecuta la primera iteración antes del ciclo periódico
+			_ = EjecutarCiclo();
 			return Task.CompletedTask;
 		}
 
@@ -55,7 +71,6 @@ namespace SincronizadorWorker
 		public override Task StopAsync(CancellationToken cancellationToken)
 		{
 			_logger.LogInformation("Servicio detenido.");
-			_timer?.Change(Timeout.Infinite, 0);
 			return base.StopAsync(cancellationToken);
 		}
 
