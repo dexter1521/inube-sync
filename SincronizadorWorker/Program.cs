@@ -85,6 +85,9 @@ IHost host = Host.CreateDefaultBuilder(args)
 				return Polly.Extensions.Http.HttpPolicyExtensions
 					.HandleTransientHttpError()
 					.OrResult(r => (int)r.StatusCode == 429)
+					.OrResult(r => r.StatusCode != System.Net.HttpStatusCode.Unauthorized &&
+								   r.StatusCode != System.Net.HttpStatusCode.Forbidden &&
+								   (int)r.StatusCode != 422)
 					.WaitAndRetryAsync(jitter);
 			}
 			// Sin política para POST/DELETE

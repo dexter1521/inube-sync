@@ -41,7 +41,11 @@ namespace SincronizadorCore.Services
 			var baseDelay = _settings.Retry?.BaseDelaySeconds ?? 2;
 			return Policy<HttpResponseMessage>
 				.Handle<HttpRequestException>()
-				.OrResult(r => !r.IsSuccessStatusCode)
+				.OrResult(r =>
+					!r.IsSuccessStatusCode &&
+					(r.StatusCode != System.Net.HttpStatusCode.Unauthorized && // 401
+					 r.StatusCode != System.Net.HttpStatusCode.Forbidden &&    // 403
+					 (int)r.StatusCode != 422))
 				.WaitAndRetryAsync(maxRetries,
 					retryAttempt => TimeSpan.FromSeconds(baseDelay * retryAttempt));
 		}
@@ -50,14 +54,36 @@ namespace SincronizadorCore.Services
 		private async Task<HttpResponseMessage> GetWithRetryAsync(string requestUri)
 		{
 			var policy = GetRetryPolicy();
-			return await policy.ExecuteAsync(() => _httpClient.GetAsync(requestUri));
+			var response = await policy.ExecuteAsync(() => _httpClient.GetAsync(requestUri));
+			if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+				response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
+				(int)response.StatusCode == 422)
+			{
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error de credenciales o validación: {response.StatusCode}");
+				}
+				throw new InvalidOperationException($"Error crítico de autenticación o validación ({response.StatusCode})");
+			}
+			return response;
 		}
 
 		// Método auxiliar para POST con reintentos
 		private async Task<HttpResponseMessage> PostWithRetryAsync(string requestUri, HttpContent content)
 		{
 			var policy = GetRetryPolicy();
-			return await policy.ExecuteAsync(() => _httpClient.PostAsync(requestUri, content));
+			var response = await policy.ExecuteAsync(() => _httpClient.PostAsync(requestUri, content));
+			if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+				response.StatusCode == System.Net.HttpStatusCode.Forbidden ||
+				(int)response.StatusCode == 422)
+			{
+				if (!string.IsNullOrWhiteSpace(_settings.LogsPath))
+				{
+					LogService.WriteLog(_settings.LogsPath, $"[API] Error de credenciales o validación: {response.StatusCode}");
+				}
+				throw new InvalidOperationException($"Error crítico de autenticación o validación ({response.StatusCode})");
+			}
+			return response;
 		}
 
 		// Sincronizar datos locales hacia la nube
