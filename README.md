@@ -45,13 +45,27 @@ packages/                         # Paquetes NuGet
 - .NET Framework 4.7.2 y/o .NET 8
 - Visual Studio 2022 o superior
 
-## Uso
+
+## Quickstart (Onboarding en 5 minutos)
+
 1. Clona el repositorio:
-   ```
-   git clone https://github.com/dexter1521/inube-sync.git
-   ```
-2. Abre `SincronizadorSolucion.sln` en Visual Studio.
-3. Compila la solución y ejecuta el proyecto deseado.
+  ```
+  git clone https://github.com/dexter1521/inube-sync.git
+  ```
+
+2. Copia el archivo de ejemplo de configuración:
+  ```
+  cp appsettings.example.json appsettings.json
+  ```
+  Edita los valores de `ApiUrl`, `DeviceToken`, y la cadena de conexión SQL según tu entorno.
+
+3. Abre `SincronizadorSolucion.sln` en Visual Studio.
+
+4. Compila la solución y ejecuta el proyecto deseado (UI, Worker, etc.).
+
+5. Los logs diarios se guardan en la carpeta configurada (`LogsPath`).
+
+¡Listo! Tu entorno estará funcionando en minutos.
 
 ## Licencia
 Este proyecto es propiedad de inube. Uso interno y privado.
