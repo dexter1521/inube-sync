@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
+			toolTip1 = new System.Windows.Forms.ToolTip(components);
 			chkBoxProductos = new CheckBox();
 			Timer1 = new System.Windows.Forms.Timer(components);
 			groupBox1 = new GroupBox();
@@ -409,6 +410,16 @@
 			tabPage2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)logDataGridView).EndInit();
 			ResumeLayout(false);
+			// 
+			// Tooltips para cambios en caliente
+			toolTip1.SetToolTip(nudIntervalo, "Se aplica en caliente. No requiere reinicio del servicio.");
+			toolTip1.SetToolTip(txtTimeoutSeconds, "Se aplica en caliente. No requiere reinicio del servicio.");
+			toolTip1.SetToolTip(txtRetryMax, "Se aplica en caliente. No requiere reinicio del servicio.");
+			toolTip1.SetToolTip(txtRetryDelay, "Se aplica en caliente. No requiere reinicio del servicio.");
+			// Tooltips para cambios que requieren reinicio
+			toolTip1.SetToolTip(txtApiUrl, "Requiere reinicio del servicio para aplicar cambios.");
+			toolTip1.SetToolTip(txtConnectionString, "Requiere reinicio del servicio para aplicar cambios.");
+			toolTip1.SetToolTip(txtDeviceToken, "Normalmente requiere reinicio del servicio para aplicar cambios.");
 		}
 
 		#endregion
@@ -443,5 +454,6 @@
 		private Button btnCargar;
 		private Button btnGuardar;
 		private Button btnReiniciar;
+		private System.Windows.Forms.ToolTip toolTip1;
 	}
 }

@@ -146,8 +146,6 @@ namespace SincronizadorConfigUIv8
 				_settings.ApiUrl = txtApiUrl.Text.Trim();
 				_settings.DeviceToken = txtDeviceToken.Text.Trim();
 				_settings.SqlServer = txtConnectionString.Text.Trim();
-				// Si tienes más campos en AppSettings, agrégalos aquí
-				// Ejemplo: if (int.TryParse(txtTimeout.Text, out var t)) _settings.TimeoutSeconds = t;
 				_cfg.AppSettings = _settings;
 				ConfigAtomic.SaveConfigAtomic(_configPath, _cfg);
 
@@ -183,48 +181,11 @@ namespace SincronizadorConfigUIv8
 				return false;
 			}
 
-			// string logDir = txtLogsPath.Text.Trim();
-
-			// // Validar caracteres inválidos en la ruta de logs
-			// if (logDir.Any(c => Path.GetInvalidPathChars().Contains(c)))
-			// {
-			// 	MessageBox.Show("La ruta del directorio de logs contiene caracteres inválidos.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-			// 	return false;
-			// }
-
-			// // Validar si hay caracteres prohibidos en carpetas
-			// char[] caracteresProhibidos = Path.GetInvalidFileNameChars();
-			// if (logDir.IndexOfAny(caracteresProhibidos) >= 0)
-			// {
-			// 	MessageBox.Show("La ruta del directorio de logs contiene caracteres no permitidos por el sistema.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-			// 	return false;
-			// }
-
-			// if (!Directory.Exists(logDir))
-			// {
-			// 	var resultado = MessageBox.Show(
-			// 		$"El directorio '{logDir}' no existe. ¿Deseas crearlo?",
-			// 		"Directorio no encontrado",
-			// 		MessageBoxButtons.YesNo,
-			// 		MessageBoxIcon.Question);
-
-			// 	if (resultado == DialogResult.Yes)
-			// 	{
-			// 		try
-			// 		{
-			// 			Directory.CreateDirectory(logDir);
-			// 		}
-			// 		catch (Exception ex)
-			// 		{
-			// 			MessageBox.Show($"No se pudo crear el directorio:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			// 			return false;
-			// 		}
-			// 	}
-			// 	else
-			// 	{
-			// 		return false;
-			// 	}
-			// }
+			if (string.IsNullOrWhiteSpace(txtDeviceToken.Text))
+			{
+				MessageBox.Show("El DeviceToken no puede estar vacío.", "Validación", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return false;
+			}
 
 			// Puedes agregar más validaciones según tus necesidades
 			return true;

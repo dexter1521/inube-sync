@@ -12,13 +12,55 @@ namespace SincronizadorConfigUIv8
 		// Permite obtener la ruta real del appsettings.json del Worker instalado como servicio
 		public static string GetServiceExeFolder(string serviceName)
 		{
-			using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\\CurrentControlSet\\Services\\{serviceName}");
-			if (key == null) throw new InvalidOperationException("Servicio no encontrado en el registro.");
-			var imagePath = key.GetValue("ImagePath")?.ToString() ?? "";
+			// Intenta primero en 64 bits, luego en 32 bits si no se encuentra
+			string? imagePath = null;
+			foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
+			{
+				try
+				{
+					using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+					using var key = baseKey.OpenSubKey($@"SYSTEM\\CurrentControlSet\\Services\\{serviceName}");
+					if (key != null)
+					{
+						imagePath = key.GetValue("ImagePath")?.ToString() ?? "";
+						break;
+					}
+				}
+				catch (System.Security.SecurityException)
+				{
+					System.Windows.Forms.MessageBox.Show("Acceso denegado al registro. Ejecuta la aplicación como Administrador.", "Permisos requeridos", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+					throw;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					System.Windows.Forms.MessageBox.Show("Acceso denegado al registro. Ejecuta la aplicación como Administrador.", "Permisos requeridos", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+					throw;
+				}
+				catch { }
+			}
+			if (string.IsNullOrWhiteSpace(imagePath)) throw new InvalidOperationException("Servicio no encontrado en el registro.");
+			// Caso 1: entrecomillado
 			var match = Regex.Match(imagePath, "^\"(?<exe>[^\"]+)\"");
-			var exe = match.Success ? match.Groups["exe"].Value : imagePath.Split(' ')[0];
-			if (string.IsNullOrWhiteSpace(exe)) throw new InvalidOperationException("ImagePath vacío.");
-			return Path.GetDirectoryName(exe)!;
+			if (match.Success)
+			{
+				var exe = match.Groups["exe"].Value;
+				if (string.IsNullOrWhiteSpace(exe)) throw new InvalidOperationException("ImagePath vacío.");
+				return Path.GetDirectoryName(exe)!;
+			}
+			// Caso 2: sin comillas, con espacios y argumentos
+			// Busca el primer token que termine en .exe
+			var tokens = imagePath.Split(' ');
+			foreach (var token in tokens)
+			{
+				if (token.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+				{
+					return Path.GetDirectoryName(token)!;
+				}
+			}
+			// Fallback: primer token
+			var fallbackExe = tokens[0];
+			if (string.IsNullOrWhiteSpace(fallbackExe)) throw new InvalidOperationException("ImagePath vacío.");
+			return Path.GetDirectoryName(fallbackExe)!;
 		}
 
 		public static string GetAppSettingsPath(string serviceName)
@@ -77,7 +119,6 @@ namespace SincronizadorConfigUIv8
 
 		public static void SaveConfig(AppSettings settings, string? customPath = null)
 		{
-			// Si el archivo no existe, crear con valores por defecto
 			var path = customPath ?? ConfigPath;
 			if (!File.Exists(path))
 			{
@@ -88,11 +129,14 @@ namespace SincronizadorConfigUIv8
 			using JsonDocument doc = JsonDocument.Parse(json);
 			var root = doc.RootElement;
 
-			var options = new JsonSerializerOptions { WriteIndented = true };
-			string newAppSettingsJson = JsonSerializer.Serialize(settings, options);
-
-			string newJson = $"{{\"Logging\": {root.GetProperty("Logging").GetRawText()}, \"AppSettings\": {newAppSettingsJson}}}";
-			File.WriteAllText(path, newJson);
+			// Construir RootConfig para delegar escritura atómica
+			var logging = JsonSerializer.Deserialize<Dictionary<string, object>>(root.GetProperty("Logging").GetRawText());
+			var rootCfg = new RootConfig
+			{
+				Logging = logging,
+				AppSettings = settings
+			};
+			ConfigAtomic.SaveConfigAtomic(path, rootCfg);
 		}
 	}
 }
