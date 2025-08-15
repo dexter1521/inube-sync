@@ -30,6 +30,13 @@ namespace SincronizadorWorker
 
 		protected override Task ExecuteAsync(CancellationToken stoppingToken)
 		{
+			// Validación de configuración crítica
+			if (string.IsNullOrWhiteSpace(_settings.Value.ApiUrl) || string.IsNullOrWhiteSpace(_settings.Value.DeviceToken))
+			{
+				_logger.LogCritical("No se puede iniciar el servicio: falta ApiUrl o DeviceToken en la configuración.");
+				throw new InvalidOperationException("Configuración incompleta: ApiUrl y DeviceToken son obligatorios.");
+			}
+
 			_logger.LogInformation("Servicio iniciado.");
 
 			var intervalo = TimeSpan.FromMinutes(_settings.Value.IntervaloMinutos);
