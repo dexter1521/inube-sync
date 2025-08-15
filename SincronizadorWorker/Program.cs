@@ -82,12 +82,13 @@ IHost host = Host.CreateDefaultBuilder(args)
 				var delay = TimeSpan.FromSeconds(2);
 				var maxRetries = 5;
 				var jitter = Polly.Contrib.WaitAndRetry.Backoff.DecorrelatedJitterBackoffV2(delay, maxRetries);
-				return Polly.Extensions.Http.HttpPolicyExtensions
-					.HandleTransientHttpError()
-					.OrResult(r => (int)r.StatusCode == 429)
-					.OrResult(r => r.StatusCode != System.Net.HttpStatusCode.Unauthorized &&
-								   r.StatusCode != System.Net.HttpStatusCode.Forbidden &&
-								   (int)r.StatusCode != 422)
+				// Solo reintentar en errores transitorios: 5xx, 408, 429
+				return Policy<HttpResponseMessage>
+					.Handle<HttpRequestException>()
+					.OrResult(r =>
+						((int)r.StatusCode >= 500 && (int)r.StatusCode < 600) || // 5xx
+						r.StatusCode == System.Net.HttpStatusCode.RequestTimeout || // 408
+						(int)r.StatusCode == 429)
 					.WaitAndRetryAsync(jitter);
 			}
 			// Sin política para POST/DELETE
