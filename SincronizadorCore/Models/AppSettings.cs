@@ -11,6 +11,9 @@ namespace SincronizadorCore.Models
 		public int BatchSize { get; set; } = 100;
 		public RetrySettings? Retry { get; set; }
 		public bool SubirDatosANube { get; set; }
+		public bool DescargarProductos { get; set; }
+		public bool SubirVentas { get; set; }
+		public bool SubirCortes { get; set; }
 	}
 
 	public sealed class RetrySettings
@@ -33,7 +36,6 @@ namespace SincronizadorCore.Models
 	{
 		public LoggingSettings Logging { get; set; } = new();
 		public AppSettings AppSettings { get; set; } = new();
-	}	
+	}
 
-	// Eliminado LogLevelSettings, ahora LogLevel es un Dictionary<string, string>
 }

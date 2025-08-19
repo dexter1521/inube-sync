@@ -32,6 +32,7 @@
 			chkBoxProductos = new CheckBox();
 			Timer1 = new System.Windows.Forms.Timer(components);
 			groupBox1 = new GroupBox();
+			btnReiniciar = new Button();
 			btnGuardar = new Button();
 			btnCargar = new Button();
 			txtConnectionString = new TextBox();
@@ -58,7 +59,6 @@
 			logDataGridView = new DataGridView();
 			backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
 			progressBar1 = new ProgressBar();
-			btnReiniciar = new Button();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)nudIntervalo).BeginInit();
 			groupBox2.SuspendLayout();
@@ -113,6 +113,16 @@
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Datos Generales";
 			// 
+			// btnReiniciar
+			// 
+			btnReiniciar.Location = new Point(674, 45);
+			btnReiniciar.Name = "btnReiniciar";
+			btnReiniciar.Size = new Size(101, 29);
+			btnReiniciar.TabIndex = 30;
+			btnReiniciar.Text = "Recargar";
+			btnReiniciar.UseVisualStyleBackColor = true;
+			btnReiniciar.Click += btnReiniciar_Click;
+			// 
 			// btnGuardar
 			// 
 			btnGuardar.Location = new Point(509, 89);
@@ -145,7 +155,7 @@
 			// 
 			// nudIntervalo
 			// 
-			nudIntervalo.Location = new Point(421, 39);
+			nudIntervalo.Location = new Point(421, 45);
 			nudIntervalo.Margin = new Padding(4);
 			nudIntervalo.Name = "nudIntervalo";
 			nudIntervalo.Size = new Size(176, 20);
@@ -155,7 +165,7 @@
 			// label6
 			// 
 			label6.AutoSize = true;
-			label6.Location = new Point(336, 41);
+			label6.Location = new Point(336, 46);
 			label6.Margin = new Padding(4, 0, 4, 0);
 			label6.Name = "label6";
 			label6.Size = new Size(77, 13);
@@ -175,7 +185,7 @@
 			// label3
 			// 
 			label3.AutoSize = true;
-			label3.Location = new Point(8, 61);
+			label3.Location = new Point(8, 71);
 			label3.Margin = new Padding(4, 0, 4, 0);
 			label3.Name = "label3";
 			label3.Size = new Size(61, 13);
@@ -184,7 +194,7 @@
 			// 
 			// txtDeviceToken
 			// 
-			txtDeviceToken.Location = new Point(77, 58);
+			txtDeviceToken.Location = new Point(77, 71);
 			txtDeviceToken.Margin = new Padding(4);
 			txtDeviceToken.MaxLength = 255;
 			txtDeviceToken.Multiline = true;
@@ -194,7 +204,7 @@
 			// 
 			// txtApiUser
 			// 
-			txtApiUser.Location = new Point(77, 34);
+			txtApiUser.Location = new Point(77, 46);
 			txtApiUser.Margin = new Padding(4);
 			txtApiUser.Name = "txtApiUser";
 			txtApiUser.Size = new Size(251, 20);
@@ -203,7 +213,7 @@
 			// label2
 			// 
 			label2.AutoSize = true;
-			label2.Location = new Point(8, 41);
+			label2.Location = new Point(8, 46);
 			label2.Margin = new Padding(4, 0, 4, 0);
 			label2.Name = "label2";
 			label2.Size = new Size(50, 13);
@@ -281,7 +291,7 @@
 			groupBox3.Size = new Size(354, 94);
 			groupBox3.TabIndex = 13;
 			groupBox3.TabStop = false;
-			groupBox3.Text = "Cargar Datos";
+			groupBox3.Text = "Subir Datos";
 			// 
 			// chkBoxVentas
 			// 
@@ -370,16 +380,6 @@
 			progressBar1.Name = "progressBar1";
 			progressBar1.Size = new Size(774, 26);
 			progressBar1.TabIndex = 15;
-			// 
-			// btnReiniciar
-			// 
-			btnReiniciar.Location = new Point(674, 45);
-			btnReiniciar.Name = "btnReiniciar";
-			btnReiniciar.Size = new Size(101, 29);
-			btnReiniciar.TabIndex = 30;
-			btnReiniciar.Text = "Recargar";
-			btnReiniciar.UseVisualStyleBackColor = true;
-			btnReiniciar.Click += btnReiniciar_Click;
 			// 
 			// Panel
 			// 

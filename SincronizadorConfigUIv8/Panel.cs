@@ -100,6 +100,9 @@ namespace SincronizadorConfigUIv8
 				txtApiUser.Text = _settings.ApiUser;
 				txtDeviceToken.Text = _settings.DeviceToken;
 				txtConnectionString.Text = _settings.SqlServer;
+				chkBoxProductos.Checked = _settings.DescargarProductos;
+				chkBoxVentas.Checked = _settings.SubirVentas;
+				chkBoxCortes.Checked = _settings.SubirCortes;
 			}
 			catch (Exception ex)
 			{
@@ -119,6 +122,9 @@ namespace SincronizadorConfigUIv8
 				_settings.ApiUser = txtApiUser.Text.Trim();
 				_settings.DeviceToken = txtDeviceToken.Text.Trim();
 				_settings.SqlServer = txtConnectionString.Text.Trim();
+				_settings.DescargarProductos = chkBoxProductos.Checked;
+				_settings.SubirVentas = chkBoxVentas.Checked;
+				_settings.SubirCortes = chkBoxCortes.Checked;
 				_config.AppSettings = _settings;
 				ConfigHelper.SaveConfig(_config);
 
