@@ -246,11 +246,14 @@ namespace SincronizadorCore.Services
 					}
 
 					// 4. Subir producto usando ProductoUploadModel
+					// Log para verificar el valor de bloqueado antes de enviar al API
+					LogService.WriteLog(_logsPath, $"[DEBUG] Producto a subir: {productoNoNull.articulo}, bloqueado={productoNoNull.bloqueado}", requestId);
+
 					var upload = new ProductoUploadModel
 					{
 						Clave = productoNoNull.articulo,
 						Descripcion = productoNoNull.descripcion,
-						Precio = productoNoNull.precio1,
+						Precio = Math.Round(productoNoNull.precio1, 2),
 						Linea = productoNoNull.linea,
 						Marca = productoNoNull.marca,
 						Fabricante = productoNoNull.fabricante,
@@ -264,25 +267,20 @@ namespace SincronizadorCore.Services
 						BajoCosto = productoNoNull.bajocosto,
 						Impuesto = productoNoNull.impuesto,
 						Existencia = productoNoNull.existencia,
-						Precio2 = productoNoNull.precio2,
-						Precio3 = productoNoNull.precio3,
-						Precio4 = productoNoNull.precio4,
-						Precio5 = productoNoNull.precio5,
-						Precio6 = productoNoNull.precio6,
-						Precio7 = productoNoNull.precio7,
-						Precio8 = productoNoNull.precio8,
-						Precio9 = productoNoNull.precio9,
-						Precio10 = productoNoNull.precio10,
+						Precio2 = Math.Round(productoNoNull.precio2, 2),
+						Precio3 = Math.Round(productoNoNull.precio3, 2),
+						Precio4 = Math.Round(productoNoNull.precio4, 2),
+						Precio5 = Math.Round(productoNoNull.precio5, 2),
+						Precio6 = Math.Round(productoNoNull.precio6, 2),
+						Precio7 = Math.Round(productoNoNull.precio7, 2),
+						Precio8 = Math.Round(productoNoNull.precio8, 2),
+						Precio9 = Math.Round(productoNoNull.precio9, 2),
+						Precio10 = Math.Round(productoNoNull.precio10, 2),
 						U1 = productoNoNull.u1.ToString(),
 						U2 = productoNoNull.u2.ToString(),
 						U3 = productoNoNull.u3.ToString(),
 						U4 = productoNoNull.u4.ToString(),
 						U5 = productoNoNull.u5.ToString(),
-						U6 = productoNoNull.u6.ToString(),
-						U7 = productoNoNull.u7.ToString(),
-						U8 = productoNoNull.u8.ToString(),
-						U9 = productoNoNull.u9.ToString(),
-						U10 = productoNoNull.u10.ToString(),
 						C2 = productoNoNull.c2.ToString(),
 						C3 = productoNoNull.c3.ToString(),
 						C4 = productoNoNull.c4.ToString(),
@@ -292,10 +290,17 @@ namespace SincronizadorCore.Services
 						C8 = productoNoNull.c8.ToString(),
 						C9 = productoNoNull.c9.ToString(),
 						C10 = productoNoNull.c10.ToString(),
-						CostoUltimo = productoNoNull.costoultimo,
+						CostoUltimo = Math.Round(productoNoNull.costoultimo, 2),
 						ClaveProdServ = string.IsNullOrWhiteSpace(productoNoNull.claveprodserv) ? "01010101" : productoNoNull.claveprodserv,
 						ClaveUnidad = string.IsNullOrWhiteSpace(productoNoNull.claveunidad) ? "H87" : productoNoNull.claveunidad
 					};
+
+					// Log temporal: guardar el JSON completo si el producto está bloqueado
+					if (productoNoNull.bloqueado == 1)
+					{
+						LogService.WriteLog(_logsPath, $"[BLOCKED_JSON] {productoNoNull.articulo}: {JsonSerializer.Serialize(upload)}", requestId);
+					}
+
 					var content = new StringContent(JsonSerializer.Serialize(upload), Encoding.UTF8, "application/json");
 					var getResp = await GetWithRetryAsync($"/api/productos/{Uri.EscapeDataString(producto.articulo)}");
 					if (getResp.IsSuccessStatusCode)
@@ -341,14 +346,14 @@ namespace SincronizadorCore.Services
 								}
 								if (!string.IsNullOrWhiteSpace(_logsPath))
 								{
-									LogService.WriteLog(_logsPath, $"[UPLOAD] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.", requestId);
+									LogService.WriteLog(_logsPath, $"[REGISTER] Producto {producto.articulo} (POST): 422 - Ya existe, marcado como exportado localmente.", requestId);
 								}
 								continue;
 							}
 						}
 						if (!string.IsNullOrWhiteSpace(_logsPath))
 						{
-							LogService.WriteLog(_logsPath, $"[UPLOAD] Producto {producto.articulo} (POST): {postResp.StatusCode} - {postMsg}{postError}", requestId);
+							LogService.WriteLog(_logsPath, $"[REGISTER] Producto {producto.articulo} (POST): {postResp.StatusCode} - {postMsg}{postError}", requestId);
 						}
 						if (postResp.IsSuccessStatusCode)
 						{
@@ -358,7 +363,7 @@ namespace SincronizadorCore.Services
 							}
 							if (!string.IsNullOrWhiteSpace(_logsPath))
 							{
-								LogService.WriteLog(_logsPath, $"[UPLOAD] Producto marcado como exportado: {producto.articulo}", requestId);
+								LogService.WriteLog(_logsPath, $"[REGISTER] Producto marcado como exportado: {producto.articulo}", requestId);
 							}
 						}
 					}
@@ -519,127 +524,8 @@ namespace SincronizadorCore.Services
 				}
 			}
 		}
-		public async Task ConsultarDispositivosAsync()
-		{
-			_httpClient.DefaultRequestHeaders.Authorization =
-				new AuthenticationHeaderValue("Bearer", _settings.DeviceToken);
 
-			var response = await _httpClient.GetAsync("/api/dispositivos");
-			var result = await response.Content.ReadAsStringAsync();
 
-			if (!string.IsNullOrWhiteSpace(_logsPath))
-			{
-				LogService.WriteLog(_logsPath,
-					$"GET dispositivos: {(int)response.StatusCode} - {result}");
-			}
-		}
 
-		public async Task SincronizarLineasDesdeApiAsync()
-		{
-			var response = await _httpClient.GetAsync("/api/lineas");
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				var lineasApi = JsonSerializer.Deserialize<List<LineaModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<LineaModel>();
-				int count = 0;
-				foreach (var linea in lineasApi)
-				{
-					// Solo usar los campos relevantes
-					var lineaLocal = new LineaModel
-					{
-						Linea = linea.Linea ?? string.Empty,
-						Descrip = linea.Descrip ?? string.Empty
-					};
-					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
-					{
-						await SqlHelper.InsertarOActualizarLineaAsync(lineaLocal, _settings.SqlServer);
-					}
-					count++;
-				}
-				if (!string.IsNullOrWhiteSpace(_logsPath))
-				{
-					LogService.WriteLog(_logsPath, $"[API] Se sincronizaron {count} líneas.");
-				}
-			}
-			else
-			{
-				if (!string.IsNullOrWhiteSpace(_logsPath))
-				{
-					LogService.WriteLog(_logsPath, $"[API] Error al obtener líneas: {response.StatusCode}");
-				}
-			}
-		}
-
-		public async Task SincronizarMarcasDesdeApiAsync()
-		{
-			var response = await _httpClient.GetAsync("/api/marcas");
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				var marcasApi = JsonSerializer.Deserialize<List<MarcaModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<MarcaModel>();
-				int count = 0;
-				foreach (var marca in marcasApi)
-				{
-					// Solo usar los campos relevantes
-					var marcaLocal = new MarcaModel
-					{
-						Marca = marca.Marca ?? string.Empty,
-						Descrip = marca.Descrip ?? string.Empty
-					};
-					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
-					{
-						await SqlHelper.InsertarOActualizarMarcaAsync(marcaLocal, _settings.SqlServer);
-					}
-					count++;
-				}
-				if (!string.IsNullOrWhiteSpace(_logsPath))
-				{
-					LogService.WriteLog(_logsPath, $"[API] Se sincronizaron {count} marcas.");
-				}
-			}
-			else
-			{
-				if (!string.IsNullOrWhiteSpace(_logsPath))
-				{
-					LogService.WriteLog(_logsPath, $"[API] Error al obtener marcas: {response.StatusCode}");
-				}
-			}
-		}
-
-		public async Task SincronizarImpuestosDesdeApiAsync()
-		{
-			var response = await _httpClient.GetAsync("/api/impuestos");
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				var impuestosApi = JsonSerializer.Deserialize<List<ImpuestoModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<ImpuestoModel>();
-				int count = 0;
-				foreach (var impuesto in impuestosApi)
-				{
-					// Solo usar los campos relevantes
-					var impuestoLocal = new ImpuestoModel
-					{
-						Impuesto = impuesto.Impuesto ?? string.Empty,
-						Valor = impuesto.Valor
-					};
-					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
-					{
-						await SqlHelper.InsertarOActualizarImpuestoAsync(impuestoLocal, _settings.SqlServer);
-					}
-					count++;
-				}
-				if (!string.IsNullOrWhiteSpace(_logsPath))
-				{
-					LogService.WriteLog(_logsPath, $"[API] Se sincronizaron {count} impuestos.");
-				}
-			}
-			else
-			{
-				if (!string.IsNullOrWhiteSpace(_logsPath))
-				{
-					LogService.WriteLog(_logsPath, $"[API] Error al obtener impuestos: {response.StatusCode}");
-				}
-			}
-		}
 	}
 }
