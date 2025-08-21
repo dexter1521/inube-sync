@@ -1,13 +1,13 @@
 # inube-sync
 
-Solución de sincronización multiaplicación para entornos Windows, desarrollada en .NET y C#. Este repositorio contiene una suite de herramientas y servicios para la gestión y sincronización de configuraciones y datos entre diferentes componentes.
+Sincronizador de productos y catálogos para entornos Windows, desarrollado en .NET y C#. Permite la gestión y sincronización de datos entre base local y API, con control de exportación, bloqueo y logs detallados.
 
 ## Proyectos incluidos
 
-- **SincronizadorConfigUI**: Aplicación de escritorio con interfaz gráfica para la configuración y administración de la sincronización.
-- **SincronizadorConfigUIv8**: Versión alternativa/actualizada de la interfaz de configuración, compatible con .NET 8.
-- **SincronizadorCore**: Núcleo de lógica de negocio y utilidades compartidas entre los proyectos.
-- **SincronizadorWorker**: Servicio o aplicación de fondo encargado de ejecutar tareas de sincronización automatizadas.
+- **SincronizadorConfigUI**: Interfaz gráfica para configuración y administración.
+- **SincronizadorConfigUIv8**: UI moderna compatible con .NET 8.
+- **SincronizadorCore**: Lógica central, modelos y utilidades.
+- **SincronizadorWorker**: Servicio de sincronización automatizada.
 
 ## Estructura principal
 
@@ -20,6 +20,13 @@ SincronizadorWorker/              # Servicio de sincronización
 packages/                         # Paquetes NuGet
 ```
 
+## Estado actual y novedades
+
+- Primer versión funcional lista para pruebas y despliegue.
+- Lectura y envío correcto del campo `bloqueado` en productos.
+- Logs mejorados: ahora se distingue entre registros nuevos (`[REGISTER]`) y actualizaciones (`[UPLOAD]`).
+- Se registra el JSON completo de productos bloqueados para auditoría temporal.
+- Validación robusta de datos leídos desde SQL Server (soporte para `smallint`).
 
 ## Lógica de sincronización de productos y catálogos
 
@@ -37,23 +44,35 @@ packages/                         # Paquetes NuGet
 - **Sincronización descendente:**
   - Descarga productos pendientes desde la nube y actualiza la base local.
   - Confirma cada producto actualizado ante el API.
-- **Logs detallados:** Cada operación relevante (POST, PUT, errores, validaciones) queda registrada en archivos de log.
-
+- **Logs detallados:** Cada operación relevante (POST, PUT, errores, validaciones) queda registrada en archivos de log. Los productos bloqueados se auditan temporalmente con su JSON completo.
 
 ## Requisitos
+
 - Windows 10/11
 - .NET Framework 4.7.2 y/o .NET 8
 - Visual Studio 2022 o superior
 
 ## Uso
+
 1. Clona el repositorio:
-   ```
-   git clone https://github.com/dexter1521/inube-sync.git
-   ```
+
+```
+git clone https://github.com/dexter1521/inube-sync.git
+```
+
 2. Abre `SincronizadorSolucion.sln` en Visual Studio.
 3. Compila la solución y ejecuta el proyecto deseado.
+4. Configura la conexión a la base local y API en los archivos `appsettings.json`.
+5. Revisa los logs en la carpeta `Logs/` para auditoría y depuración.
+
+## Recomendaciones para pruebas
+
+- Verifica que los productos bloqueados se exporten correctamente y se registren en los logs.
+- Revisa los logs para confirmar el flujo de registro y actualización.
+- Realiza pruebas de sincronización ascendente y descendente.
 
 ## Licencia
+
 Este proyecto es propiedad de inube. Uso interno y privado.
 
 ---
