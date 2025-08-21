@@ -10,7 +10,7 @@ namespace SincronizadorConfigUIv8
 
 	public class RootConfig
 	{
-	public LoggingSettings Logging { get; set; } = new();
+		public LoggingSettings Logging { get; set; } = new();
 		public AppSettings AppSettings { get; set; } = new();
 	}
 

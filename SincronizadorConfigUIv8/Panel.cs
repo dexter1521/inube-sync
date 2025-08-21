@@ -220,7 +220,6 @@ namespace SincronizadorConfigUIv8
 				MessageBox.Show("No se pudo reiniciar: " + ex.Message);
 			}
 		}
-
 	}
 }
 

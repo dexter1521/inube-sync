@@ -247,6 +247,7 @@
 			btnDetener.TabIndex = 15;
 			btnDetener.Text = "Detener";
 			btnDetener.UseVisualStyleBackColor = true;
+			btnDetener.Click += btnDetener_Click;
 			// 
 			// btnIniciar
 			// 
@@ -256,6 +257,7 @@
 			btnIniciar.TabIndex = 14;
 			btnIniciar.Text = "Iniciar";
 			btnIniciar.UseVisualStyleBackColor = true;
+			btnIniciar.Click += btnIniciar_Click;
 			// 
 			// lblEstado
 			// 

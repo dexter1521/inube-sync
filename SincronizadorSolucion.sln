@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SincronizadorCore", "Sincro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SincronizadorConfigUIv8", "SincronizadorConfigUIv8\SincronizadorConfigUIv8.csproj", "{7EB0AA05-3F3C-4F9F-A793-CA4B780D7DFE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InubeInstallerActions", "InubeInstallerActions\InubeInstallerActions.csproj", "{401343F0-3E4B-43CA-8C25-43970C8B3EB4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{7EB0AA05-3F3C-4F9F-A793-CA4B780D7DFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EB0AA05-3F3C-4F9F-A793-CA4B780D7DFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EB0AA05-3F3C-4F9F-A793-CA4B780D7DFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{401343F0-3E4B-43CA-8C25-43970C8B3EB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{401343F0-3E4B-43CA-8C25-43970C8B3EB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{401343F0-3E4B-43CA-8C25-43970C8B3EB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{401343F0-3E4B-43CA-8C25-43970C8B3EB4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
