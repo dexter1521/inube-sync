@@ -1,34 +1,16 @@
 using System;
 using System.Collections.Generic;
+using SincronizadorCore.Models;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SincronizadorConfigUIv8
 {
-	public class RetrySettings
-	{
-		public int MaxRetries { get; set; } = 3;
-		public int BaseDelaySeconds { get; set; } = 2;
-	}
-
-	public class AppSettings
-	{
-		public int IntervaloMinutos { get; set; } = 15;
-		public string ApiUrl { get; set; } = "";
-		public string ApiUser { get; set; } = "";
-		public string DeviceToken { get; set; } = "";
-		public string SqlServer { get; set; } = "";
-		public int TimeoutSeconds { get; set; } = 30;
-		public string LogsPath { get; set; } = "C:\\Inube\\Logs";
-		public string ApiToken { get; set; } = "";
-		public RetrySettings Retry { get; set; } = new();
-		public bool SubirDatosANube { get; set; }
-	}
 
 	public class RootConfig
 	{
-		public Dictionary<string, object>? Logging { get; set; }
+	public LoggingSettings Logging { get; set; } = new();
 		public AppSettings AppSettings { get; set; } = new();
 	}
 
