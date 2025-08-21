@@ -1,9 +1,9 @@
-﻿using Microsoft.Win32;
-using System.Text.RegularExpressions;
-using SincronizadorCore.Utils;
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Win32;
+using System.Text.RegularExpressions;
+using SincronizadorCore.Models;
 
 namespace SincronizadorConfigUIv8
 {
@@ -77,66 +77,41 @@ namespace SincronizadorConfigUIv8
 			ConfigPath = path;
 		}
 
-		public static AppSettings LoadConfig(string? customPath = null)
+		public static RootConfig LoadConfig(string? customPath = null)
 		{
 			var path = customPath ?? ConfigPath;
 			if (!File.Exists(path))
 			{
-				// Crear archivo con estructura por defecto
-				var defaultConfig = new
+				var defaultConfig = new RootConfig
 				{
-					Logging = new
-					{
-						LogLevel = new
-						{
-							Default = "Information",
-							Microsoft = "Warning",
-							MicrosoftHostingLifetime = "Information"
-						}
-					},
+					Logging = new LoggingSettings { LogsPath = "C:\\Inube\\Logs" },
 					AppSettings = new AppSettings
 					{
 						IntervaloMinutos = 15,
-						ApiUrl = "https://miapi.com/api",
-						ApiUser = "usuario",
-						DeviceToken = "password",
-						LogsPath = "Logs",
+						ApiUrl = "",
+						ApiUser = "",
+						DeviceToken = "",
 						SqlServer = "Server=.;Database=MiDB;Trusted_Connection=True;",
-						ApiToken = "123456"
+						TimeoutSeconds = 30,
+						BatchSize = 100,
+						SubirDatosANube = false,
+						Retry = new RetrySettings()
 					}
 				};
-
 				var options = new JsonSerializerOptions { WriteIndented = true };
 				string json = JsonSerializer.Serialize(defaultConfig, options);
 				File.WriteAllText(path, json);
 			}
-
 			var rawJson = File.ReadAllText(path);
-			var root = JsonDocument.Parse(rawJson).RootElement;
-			var appSettings = root.GetProperty("AppSettings").GetRawText();
-			return JsonSerializer.Deserialize<AppSettings>(appSettings)!;
+			return JsonSerializer.Deserialize<RootConfig>(rawJson)!;
 		}
 
-		public static void SaveConfig(AppSettings settings, string? customPath = null)
+		public static void SaveConfig(RootConfig config, string? customPath = null)
 		{
 			var path = customPath ?? ConfigPath;
-			if (!File.Exists(path))
-			{
-				LoadConfig(path); // crea si no existe
-			}
-
-			var json = File.ReadAllText(path);
-			using JsonDocument doc = JsonDocument.Parse(json);
-			var root = doc.RootElement;
-
-			// Construir RootConfig para delegar escritura atómica
-			var logging = JsonSerializer.Deserialize<Dictionary<string, object>>(root.GetProperty("Logging").GetRawText());
-			var rootCfg = new RootConfig
-			{
-				Logging = logging,
-				AppSettings = settings
-			};
-			ConfigAtomic.SaveConfigAtomic(path, rootCfg);
+			var options = new JsonSerializerOptions { WriteIndented = true };
+			string json = JsonSerializer.Serialize(config, options);
+			File.WriteAllText(path, json);
 		}
 	}
 }

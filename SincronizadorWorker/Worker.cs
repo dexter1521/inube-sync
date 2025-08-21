@@ -18,14 +18,16 @@ namespace SincronizadorWorker
 
 		private readonly ILogger<Worker> _logger;
 		private readonly IOptions<AppSettings> _settings;
+		private readonly IOptions<LoggingSettings> _logging;
 		private SyncService _syncService;
 		private Timer? _timer;
 
-		public Worker(ILogger<Worker> logger, IOptions<AppSettings> options, IHttpClientFactory httpClientFactory)
+		public Worker(ILogger<Worker> logger, IOptions<AppSettings> options, IOptions<LoggingSettings> logging, IHttpClientFactory httpClientFactory)
 		{
 			_logger = logger;
 			_settings = options;
-			_syncService = new SyncService(_settings.Value);
+			_logging = logging;
+			_syncService = new SyncService(_settings.Value, _logging.Value.LogsPath);
 		}
 
 		protected override Task ExecuteAsync(CancellationToken stoppingToken)

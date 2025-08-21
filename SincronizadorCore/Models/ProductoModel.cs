@@ -15,16 +15,16 @@ namespace SincronizadorCore.Models
 		[System.Text.Json.Serialization.JsonPropertyName("clave")]
 		public required string articulo { get; set; } = string.Empty;
 		public required string descripcion { get; set; } = string.Empty;
-		public required string unidad { get; set; } = string.Empty;
+		public required string unidad { get; set; } = "PZA";
 		public required string marca { get; set; } = "SYS";
 		public required string linea { get; set; } = "SYS";
 		public required string impuesto { get; set; } = "SYS";
-		public string ubicacion { get; set; } = string.Empty;
+		public string ubicacion { get; set; } = "SYS";
 		public int bloqueado { get; set; } = 0;
 		public int existencia { get; set; } = 0;
 		public string fabricante { get; set; } = "SYS";
-		public string claveprodserv { get; set; } = string.Empty;
-		public string claveunidad { get; set; } = string.Empty;
+		public string claveprodserv { get; set; } = "01010101";
+		public string claveunidad { get; set; } = "H87";
 		public int paraventa { get; set; } = 1;
 		public int invent { get; set; } = 1;
 		public int granel { get; set; } = 0;

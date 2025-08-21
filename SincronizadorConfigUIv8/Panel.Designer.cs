@@ -29,7 +29,6 @@
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
-			toolTip1 = new System.Windows.Forms.ToolTip(components);
 			chkBoxProductos = new CheckBox();
 			Timer1 = new System.Windows.Forms.Timer(components);
 			groupBox1 = new GroupBox();
@@ -116,17 +115,17 @@
 			// 
 			// btnReiniciar
 			// 
-			btnReiniciar.Location = new Point(674, 54);
+			btnReiniciar.Location = new Point(674, 45);
 			btnReiniciar.Name = "btnReiniciar";
 			btnReiniciar.Size = new Size(101, 29);
 			btnReiniciar.TabIndex = 30;
-			btnReiniciar.Text = "Reiniciar Servicio";
+			btnReiniciar.Text = "Recargar";
 			btnReiniciar.UseVisualStyleBackColor = true;
 			btnReiniciar.Click += btnReiniciar_Click;
 			// 
 			// btnGuardar
 			// 
-			btnGuardar.Location = new Point(509, 96);
+			btnGuardar.Location = new Point(509, 89);
 			btnGuardar.Margin = new Padding(4);
 			btnGuardar.Name = "btnGuardar";
 			btnGuardar.Size = new Size(88, 26);
@@ -137,7 +136,7 @@
 			// 
 			// btnCargar
 			// 
-			btnCargar.Location = new Point(421, 96);
+			btnCargar.Location = new Point(421, 89);
 			btnCargar.Margin = new Padding(4);
 			btnCargar.Name = "btnCargar";
 			btnCargar.Size = new Size(88, 26);
@@ -148,7 +147,7 @@
 			// 
 			// txtConnectionString
 			// 
-			txtConnectionString.Location = new Point(421, 12);
+			txtConnectionString.Location = new Point(421, 13);
 			txtConnectionString.Margin = new Padding(4);
 			txtConnectionString.Name = "txtConnectionString";
 			txtConnectionString.Size = new Size(176, 20);
@@ -156,7 +155,7 @@
 			// 
 			// nudIntervalo
 			// 
-			nudIntervalo.Location = new Point(421, 35);
+			nudIntervalo.Location = new Point(421, 45);
 			nudIntervalo.Margin = new Padding(4);
 			nudIntervalo.Name = "nudIntervalo";
 			nudIntervalo.Size = new Size(176, 20);
@@ -166,7 +165,7 @@
 			// label6
 			// 
 			label6.AutoSize = true;
-			label6.Location = new Point(336, 42);
+			label6.Location = new Point(336, 46);
 			label6.Margin = new Padding(4, 0, 4, 0);
 			label6.Name = "label6";
 			label6.Size = new Size(77, 13);
@@ -186,7 +185,7 @@
 			// label3
 			// 
 			label3.AutoSize = true;
-			label3.Location = new Point(8, 61);
+			label3.Location = new Point(8, 71);
 			label3.Margin = new Padding(4, 0, 4, 0);
 			label3.Name = "label3";
 			label3.Size = new Size(61, 13);
@@ -195,7 +194,7 @@
 			// 
 			// txtDeviceToken
 			// 
-			txtDeviceToken.Location = new Point(77, 58);
+			txtDeviceToken.Location = new Point(77, 71);
 			txtDeviceToken.Margin = new Padding(4);
 			txtDeviceToken.MaxLength = 255;
 			txtDeviceToken.Multiline = true;
@@ -205,7 +204,7 @@
 			// 
 			// txtApiUser
 			// 
-			txtApiUser.Location = new Point(77, 34);
+			txtApiUser.Location = new Point(77, 46);
 			txtApiUser.Margin = new Padding(4);
 			txtApiUser.Name = "txtApiUser";
 			txtApiUser.Size = new Size(251, 20);
@@ -214,7 +213,7 @@
 			// label2
 			// 
 			label2.AutoSize = true;
-			label2.Location = new Point(8, 41);
+			label2.Location = new Point(8, 46);
 			label2.Margin = new Padding(4, 0, 4, 0);
 			label2.Name = "label2";
 			label2.Size = new Size(50, 13);
@@ -242,26 +241,26 @@
 			// btnDetener
 			// 
 			btnDetener.Font = new Font("Tahoma", 7.5F, FontStyle.Bold);
-			btnDetener.Location = new Point(675, 93);
+			btnDetener.Location = new Point(675, 80);
 			btnDetener.Name = "btnDetener";
 			btnDetener.Size = new Size(100, 32);
 			btnDetener.TabIndex = 15;
-			btnDetener.Text = "Detener Servicio";
+			btnDetener.Text = "Detener";
 			btnDetener.UseVisualStyleBackColor = true;
 			// 
 			// btnIniciar
 			// 
-			btnIniciar.Location = new Point(674, 16);
+			btnIniciar.Location = new Point(674, 13);
 			btnIniciar.Name = "btnIniciar";
 			btnIniciar.Size = new Size(101, 29);
 			btnIniciar.TabIndex = 14;
-			btnIniciar.Text = "Iniciar Servicio";
+			btnIniciar.Text = "Iniciar";
 			btnIniciar.UseVisualStyleBackColor = true;
 			// 
 			// lblEstado
 			// 
 			lblEstado.AutoSize = true;
-			lblEstado.Location = new Point(421, 62);
+			lblEstado.Location = new Point(619, 96);
 			lblEstado.Name = "lblEstado";
 			lblEstado.Size = new Size(28, 13);
 			lblEstado.TabIndex = 11;
@@ -292,7 +291,7 @@
 			groupBox3.Size = new Size(354, 94);
 			groupBox3.TabIndex = 13;
 			groupBox3.TabStop = false;
-			groupBox3.Text = "Cargar Datos";
+			groupBox3.Text = "Subir Datos";
 			// 
 			// chkBoxVentas
 			// 
@@ -410,16 +409,6 @@
 			tabPage2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)logDataGridView).EndInit();
 			ResumeLayout(false);
-			// 
-			// Tooltips para cambios en caliente
-			toolTip1.SetToolTip(nudIntervalo, "Se aplica en caliente. No requiere reinicio del servicio.");
-			toolTip1.SetToolTip(txtTimeoutSeconds, "Se aplica en caliente. No requiere reinicio del servicio.");
-			toolTip1.SetToolTip(txtRetryMax, "Se aplica en caliente. No requiere reinicio del servicio.");
-			toolTip1.SetToolTip(txtRetryDelay, "Se aplica en caliente. No requiere reinicio del servicio.");
-			// Tooltips para cambios que requieren reinicio
-			toolTip1.SetToolTip(txtApiUrl, "Requiere reinicio del servicio para aplicar cambios.");
-			toolTip1.SetToolTip(txtConnectionString, "Requiere reinicio del servicio para aplicar cambios.");
-			toolTip1.SetToolTip(txtDeviceToken, "Normalmente requiere reinicio del servicio para aplicar cambios.");
 		}
 
 		#endregion
@@ -454,6 +443,5 @@
 		private Button btnCargar;
 		private Button btnGuardar;
 		private Button btnReiniciar;
-		private System.Windows.Forms.ToolTip toolTip1;
 	}
 }

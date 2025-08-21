@@ -44,7 +44,7 @@ namespace SincronizadorCore.Utils
 					descripcion = reader["descrip"].ToString() ?? string.Empty,
 					marca = reader["marca"].ToString() ?? "SYS",
 					linea = reader["linea"].ToString() ?? "SYS",
-					unidad = reader["unidad"].ToString() ?? string.Empty,
+					unidad = reader["unidad"].ToString() ?? "PZA",
 					impuesto = reader["impuesto"].ToString() ?? string.Empty,
 					costoultimo = reader["costo_u"] != DBNull.Value ? Convert.ToDecimal(reader["costo_u"]) : 0,
 					precio1 = reader["precio1"] != DBNull.Value ? Convert.ToDecimal(reader["precio1"]) : 0,
@@ -76,11 +76,12 @@ namespace SincronizadorCore.Utils
 					c8 = reader["c8"] != DBNull.Value ? Convert.ToDecimal(reader["c8"]) : 0,
 					c9 = reader["c9"] != DBNull.Value ? Convert.ToDecimal(reader["c9"]) : 0,
 					c10 = reader["c10"] != DBNull.Value ? Convert.ToDecimal(reader["c10"]) : 0,
-					paraventa = reader["paraventa"] as int? ?? 1,
-					invent = reader["invent"] as int? ?? 1,
-					granel = reader["granel"] as int? ?? 0,
-					bajocosto = reader["bajocosto"] as int? ?? 0,
-					speso = reader["speso"] as int? ?? 0
+					paraventa = reader["paraventa"] != DBNull.Value ? Convert.ToInt32(reader["paraventa"]) : 1,
+					invent = reader["invent"] != DBNull.Value ? Convert.ToInt32(reader["invent"]) : 1,
+					granel = reader["granel"] != DBNull.Value ? Convert.ToInt32(reader["granel"]) : 0,
+					bajocosto = reader["bajocosto"] != DBNull.Value ? Convert.ToInt32(reader["bajocosto"]) : 0,
+					speso = reader["speso"] != DBNull.Value ? Convert.ToInt32(reader["speso"]) : 0,
+					bloqueado = reader["bloqueado"] != DBNull.Value ? Convert.ToInt32(reader["bloqueado"]) : 0
 				};
 				productos.Add(producto);
 			}
