@@ -525,6 +525,128 @@ namespace SincronizadorCore.Services
 			}
 		}
 
+		public async Task ConsultarDispositivosAsync()
+		{
+			_httpClient.DefaultRequestHeaders.Authorization =
+				new AuthenticationHeaderValue("Bearer", _settings.DeviceToken);
+
+			var response = await _httpClient.GetAsync("/api/dispositivos");
+			var result = await response.Content.ReadAsStringAsync();
+
+			if (!string.IsNullOrWhiteSpace(_logsPath))
+			{
+				LogService.WriteLog(_logsPath,
+					$"GET dispositivos: {(int)response.StatusCode} - {result}");
+			}
+		}
+
+		public async Task SincronizarLineasDesdeApiAsync()
+		{
+			var response = await _httpClient.GetAsync("/api/lineas");
+			if (response.IsSuccessStatusCode)
+			{
+				var json = await response.Content.ReadAsStringAsync();
+				var lineasApi = JsonSerializer.Deserialize<List<LineaModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<LineaModel>();
+				int count = 0;
+				foreach (var linea in lineasApi)
+				{
+					// Solo usar los campos relevantes
+					var lineaLocal = new LineaModel
+					{
+						Linea = linea.Linea ?? string.Empty,
+						Descrip = linea.Descrip ?? string.Empty
+					};
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarLineaAsync(lineaLocal, _settings.SqlServer);
+					}
+					count++;
+				}
+				if (!string.IsNullOrWhiteSpace(_logsPath))
+				{
+					LogService.WriteLog(_logsPath, $"[API] Se sincronizaron {count} líneas.");
+				}
+			}
+			else
+			{
+				if (!string.IsNullOrWhiteSpace(_logsPath))
+				{
+					LogService.WriteLog(_logsPath, $"[API] Error al obtener líneas: {response.StatusCode}");
+				}
+			}
+		}
+
+		public async Task SincronizarMarcasDesdeApiAsync()
+		{
+			var response = await _httpClient.GetAsync("/api/marcas");
+			if (response.IsSuccessStatusCode)
+			{
+				var json = await response.Content.ReadAsStringAsync();
+				var marcasApi = JsonSerializer.Deserialize<List<MarcaModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<MarcaModel>();
+				int count = 0;
+				foreach (var marca in marcasApi)
+				{
+					// Solo usar los campos relevantes
+					var marcaLocal = new MarcaModel
+					{
+						Marca = marca.Marca ?? string.Empty,
+						Descrip = marca.Descrip ?? string.Empty
+					};
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarMarcaAsync(marcaLocal, _settings.SqlServer);
+					}
+					count++;
+				}
+				if (!string.IsNullOrWhiteSpace(_logsPath))
+				{
+					LogService.WriteLog(_logsPath, $"[API] Se sincronizaron {count} marcas.");
+				}
+			}
+			else
+			{
+				if (!string.IsNullOrWhiteSpace(_logsPath))
+				{
+					LogService.WriteLog(_logsPath, $"[API] Error al obtener marcas: {response.StatusCode}");
+				}
+			}
+		}
+
+		public async Task SincronizarImpuestosDesdeApiAsync()
+		{
+			var response = await _httpClient.GetAsync("/api/impuestos");
+			if (response.IsSuccessStatusCode)
+			{
+				var json = await response.Content.ReadAsStringAsync();
+				var impuestosApi = JsonSerializer.Deserialize<List<ImpuestoModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<ImpuestoModel>();
+				int count = 0;
+				foreach (var impuesto in impuestosApi)
+				{
+					// Solo usar los campos relevantes
+					var impuestoLocal = new ImpuestoModel
+					{
+						Impuesto = impuesto.Impuesto ?? string.Empty,
+						Valor = impuesto.Valor
+					};
+					if (!string.IsNullOrWhiteSpace(_settings.SqlServer))
+					{
+						await SqlHelper.InsertarOActualizarImpuestoAsync(impuestoLocal, _settings.SqlServer);
+					}
+					count++;
+				}
+				if (!string.IsNullOrWhiteSpace(_logsPath))
+				{
+					LogService.WriteLog(_logsPath, $"[API] Se sincronizaron {count} impuestos.");
+				}
+			}
+			else
+			{
+				if (!string.IsNullOrWhiteSpace(_logsPath))
+				{
+					LogService.WriteLog(_logsPath, $"[API] Error al obtener impuestos: {response.StatusCode}");
+				}
+			}
+		}
 
 
 	}
